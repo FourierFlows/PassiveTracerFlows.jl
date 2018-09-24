@@ -1,4 +1,4 @@
-using Documenter, FourierFlows
+using Documenter, PassiveTracerFlows
 
 makedocs(
    modules = [PassiveTracerFlows],
