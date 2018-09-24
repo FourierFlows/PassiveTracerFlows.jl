@@ -1,6 +1,7 @@
 name = "PassiveTracerFlows"
 uuid = "4daca97c-b6ab-11e8-166d-ff56bdb6ebb2"
-authors = ["Gregory Wagner <wagner.greg@gmail.com>"]
+license = "MIT"
+authors = ["Gregory L. Wagner <wagner.greg@gmail.com>", "Navid C. Constantinou <navidcy@gmail.com>"]
 version = "0.1.0"
 
 [deps]
