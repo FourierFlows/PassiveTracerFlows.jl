@@ -1,10 +1,35 @@
-# PassiveTracerFlows
+# PassiveTracerFlows.jl
 
-<table>
-    <tr align="center">
-        <td><b>Documentation</b></td> <td>Travis</td> <td>Appveyor</td>
-    </tr>
-    <tr align="center">
-        <td><a href="https://fourierflows.github.io/PassiveTracerFlows.jl/latest/"><img src="https://img.shields.io/badge/docs-latest-blue.svg"></a><!--</br><a href="https://fourierflows.github.io/PassiveTracerFlows.jl/stable/"><img src="https://img.shields.io/badge/docs-stable-blue.svg"></a>--></td> <td><a href="https://travis-ci.org/FourierFlows/PassiveTracerFlows.jl"><img src="https://travis-ci.org/FourierFlows/PassiveTracerFlows.jl.svg?branch=master" title="Build Status"></a><td><a href="https://ci.appveyor.com/project/navidcy/passivetracerflows-jl"><img src="https://ci.appveyor.com/api/projects/status/yb5ywk9bof6u3nyg?svg=true" title="Build Status"></a></td> 
-    </tr>
- </table>
+ <p align="left">
+     <a href="https://travis-ci.org/FourierFlows/PassiveTracerFlows.jl">
+          <img src="https://travis-ci.org/FourierFlows/PassiveTracerFlows.jl.svg?branch=master" title="Build Status">
+     </a>
+     <a href="https://ci.appveyor.com/project/navidcy/passivetracerflows-jl">
+          <img src="https://ci.appveyor.com/api/projects/status/yb5ywk9bof6u3nyg?svg=true" title="Build Status">
+     </a>
+     <a href="https://GeophysicalFlows.github.io/PassiveTracerFlows.jl/stable/">
+         <img src="https://img.shields.io/badge/docs-stable-blue.svg">
+     </a>
+     <a href="https://fourierflows.github.io/PassiveTracerFlows.jl/latest/">
+         <img src="https://img.shields.io/badge/docs-latest-blue.svg">
+     </a>
+     <a href='https://coveralls.io/github/FourierFlows/PassiveTracerFlows.jl?branch=master'><img src='https://coveralls.io/repos/github/FourierFlows/PassiveTracerFlows.jl/badge.svg?branch=master' alt='Coverage Status' /></a>
+ </p>
+
+ This package leverages the [FourierFlows.jl]() framework to provide modules for solving passive tracer advection-diffusion problems on periodic domains using Fourier-based pseudospectral methods.
+
+ ## Installation
+
+ To install, do
+ ```julia
+ ] add PassiveTracerFlows
+ ```
+
+ See `examples/` for example scripts.
+
+ ## Modules
+
+ * `TracerAdvDiff`: advection-diffusion of a passive tracer in 2D domain.
+
+
+ [FourierFlows.jl]: https://github.com/FourierFlows/FourierFlows.jl
