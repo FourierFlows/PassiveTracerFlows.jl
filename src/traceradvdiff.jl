@@ -1,10 +1,17 @@
 module TracerAdvDiff
-using FourierFlows, FFTW
-import LinearAlgebra: mul!, ldiv!
 
-abstract type AbstractTracerParams <: AbstractParams end
-abstract type AbstractConstDiffParams <: AbstractParams end
-abstract type AbstractSteadyFlowParams <: AbstractParams end
+export
+   Problem,
+   set_c!,
+   updatevars!
+
+using
+  FFTW,
+  Reexport
+
+@reexport using FourierFlows
+
+import LinearAlgebra: mul!, ldiv!
 
 # --
 # Problems
@@ -48,21 +55,24 @@ function ConstDiffProblem(;
     end
   end
 
-  if steadyflow; pr = TracerAdvDiff.ConstDiffSteadyFlowParams(eta, kap, u, v, grid)
-  else;          pr = TracerAdvDiff.ConstDiffParams(eta, kap, u, v)
+  if steadyflow; pr = ConstDiffSteadyFlowParams(eta, kap, u, v, grid)
+  else;          pr = ConstDiffParams(eta, kap, u, v)
   end
 
-  vs = TracerAdvDiff.Vars(grid)
-  eq = TracerAdvDiff.Equation(pr, grid)
-  ts = FourierFlows.autoconstructtimestepper(stepper, dt, eq.LC, grid)
+  vs = Vars(grid)
+  eq = Equation(pr, grid)
 
-  FourierFlows.Problem(grid, vs, pr, eq, ts)
+  FourierFlows.Problem(eq, stepper, dt, grid, vs, pr)
 end
 
 
 # --
 # Params
 # --
+
+abstract type AbstractTracerParams <: AbstractParams end
+abstract type AbstractConstDiffParams <: AbstractParams end
+abstract type AbstractSteadyFlowParams <: AbstractParams end
 
 """
     ConstDiffParams(eta, kap, kaph, nkaph, u, v)
@@ -96,11 +106,17 @@ struct ConstDiffSteadyFlowParams{T} <: AbstractSteadyFlowParams
 end
 
 function ConstDiffSteadyFlowParams(eta, kap, kaph, nkaph, u, v, g)
-  if typeof(u) <: Function; ugrid = u.(g.X, g.Y)
-  else;                     ugrid = u
+  if typeof(u) <: Function
+    x, y = gridpoints(g)
+    ugrid = u.(x, y)
+  else
+    ugrid = u
   end
-  if typeof(v) <: Function; vgrid = v.(g.X, g.Y)
-  else;                     vgrid = v
+  if typeof(v) <: Function
+    x, y = gridpoints(g)
+    vgrid = v.(x, y)
+  else
+    vgrid = v
   end
   ConstDiffSteadyFlowParams(eta, kap, kaph, nkaph, ugrid, vgrid)
 end
@@ -117,16 +133,16 @@ ConstDiffSteadyFlowParams(eta, kap, u, v, g) = ConstDiffSteadyFlowParams(eta, ka
 
 Returns the equation for constant diffusivity problem with params p and grid g.
 """
-function Equation(p::ConstDiffParams, g)
-  LC = zero(g.Kr)
-  @. LC = -p.eta*g.kr^2 - p.kap*g.l^2 - p.kaph*g.KKrsq^p.nkaph
-  FourierFlows.Equation{typeof(LC[1, 1]),2}(LC, calcN!)
+function Equation(p::ConstDiffParams, g::AbstractGrid{T}) where T
+  LC = zero(g.Krsq)
+  @. LC = -p.eta*g.kr^2 - p.kap*g.l^2 - p.kaph*g.Krsq^p.nkaph
+  FourierFlows.Equation(LC, calcN!, g)
 end
 
-function Equation(p::ConstDiffSteadyFlowParams, g)
-  LC = zero(g.Kr)
-  @. LC = -p.eta*g.kr^2 - p.kap*g.l^2 - p.kaph*g.KKrsq^p.nkaph
-  FourierFlows.Equation{typeof(LC[1, 1]),2}(LC, calcN_steadyflow!)
+function Equation(p::ConstDiffSteadyFlowParams, g::AbstractGrid{T}) where T
+  LC = zero(g.Krsq)
+  @. LC = -p.eta*g.kr^2 - p.kap*g.l^2 - p.kaph*g.Krsq^p.nkaph
+  FourierFlows.Equation(LC, calcN_steadyflow!, g)
 end
 
 
@@ -145,9 +161,9 @@ eval(FourierFlows.structvarsexpr(:Vars, physicalvars, transformvars))
 
 Returns the vars for constant diffusivity problem on grid g.
 """
-function Vars(g)
-  @createarrays typeof(g.Lx) (g.nx, g.ny) c cx cy
-  @createarrays Complex{typeof(g.Lx)} (g.nkr, g.nl) ch cxh cyh
+function Vars(g; T=typeof(g.Lx))
+  @createarrays T (g.nx, g.ny) c cx cy
+  @createarrays Complex{T} (g.nkr, g.nl) ch cxh cyh
   Vars(c, cx, cy, ch, cxh, cyh)
 end
 
@@ -158,29 +174,30 @@ end
 # --
 
 """
-    calcN!(N, sol, t, s, v, p, g)
+    calcN!(N, sol, t, cl, v, p, g)
 
 Calculate the advective terms for a tracer equation with constant diffusivity and time-varying flow.
 """
-function calcN!(N, sol, t, s, v, p::AbstractConstDiffParams, g)
+function calcN!(N, sol, t, cl, v, p::AbstractConstDiffParams, g)
   @. v.cxh = im*g.kr*sol
   @. v.cyh = im*g.l*sol
 
   ldiv!(v.cx, g.rfftplan, v.cxh) # destroys v.cxh when using fftw
   ldiv!(v.cy, g.rfftplan, v.cyh) # destroys v.cyh when using fftw
 
-  @. v.cx = -p.u(g.X, g.Y, s.t)*v.cx - p.v(g.X, g.Y, s.t)*v.cy # copies over v.cx so v.cx = N in physical space
+  x, y = gridpoints(g)
+  @. v.cx = -p.u(x, y, cl.t)*v.cx - p.v(x, y, cl.t)*v.cy # copies over v.cx so v.cx = N in physical space
   mul!(N, g.rfftplan, v.cx)
   nothing
 end
 
 
 """
-    calcN_steadyflow!(N, sol, t, s, v, p, g)
+    calcN_steadyflow!(N, sol, t, cl, v, p, g)
 
 Calculate the advective terms for a tracer equation with constant diffusivity and time-constant flow.
 """
-function calcN_steadyflow!(N, sol, t, s, v, p::AbstractSteadyFlowParams, g)
+function calcN_steadyflow!(N, sol, t, cl, v, p::AbstractSteadyFlowParams, g)
   @. v.cxh = im*g.kr*sol
   @. v.cyh = im*g.l*sol
 
@@ -198,42 +215,41 @@ end
 # --
 
 """
-    updatevars!(v, s, g)
+    updatevars!(prob)
 
-Update the vars in v on the grid g with the solution in s.sol.
+Update the vars in v on the grid g with the solution in sol.
 """
-function updatevars!(s, v, g)
-  v.ch .= s.sol
+function updatevars!(prob)
+  v, g, sol = prob.vars, prob.grid, prob.sol
+  v.ch .= sol
   ch1 = deepcopy(v.ch)
   ldiv!(v.c, g.rfftplan, ch1)
   nothing
 end
 
-updatevars!(prob) = updatevars!(prob.state, prob.vars, prob.grid)
-
-
 """
-    set_c!(s, v, g, c)
-    set_c!(s, v, g, c::Function)
     set_c!(prob, c)
+    set_c!(prob, c::Function)
 
-Set the solution s.sol as the transform of c and update variables v
+Set the solution sol as the transform of c and update variables v
 on the grid g.
 """
-function set_c!(s, v, g, c)
-  mul!(s.sol, g.rfftplan, c)
-  updatevars!(s, v, g)
+function set_c!(prob, c)
+  sol, v, g = prob.sol, prob.vars, prob.grid
+
+  mul!(sol, g.rfftplan, c)
+  updatevars!(prob)
   nothing
 end
 
-function set_c!(s, v, g, c::Function)
-  cgrid = c.(g.X, g.Y)
-  mul!(s.sol, g.rfftplan, cgrid)
-  updatevars!(s, v, g)
+function set_c!(prob, c::Function)
+  sol, v, g = prob.sol, prob.vars, prob.grid
+
+  x, y = gridpoints(g)
+  cgrid = c.(x, y)
+  mul!(sol, g.rfftplan, cgrid)
+  updatevars!(prob)
   nothing
 end
-
-set_c!(prob, c) = set_c!(prob.state, prob.vars, prob.grid, c)
-
 
 end # module
