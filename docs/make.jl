@@ -21,8 +21,6 @@ makedocs(
 deploydocs(
        repo = "github.com/FourierFlows/PassiveTracerFlows.jl.git",
      target = "build",
-     julia = "1.0",
-    osname = "linux",
       deps = nothing,
       make = nothing
 )
