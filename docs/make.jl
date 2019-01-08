@@ -1,8 +1,14 @@
+# Workaround for JuliaLang/julia/pull/28625
+if Base.HOME_PROJECT[] !== nothing
+  Base.HOME_PROJECT[] = abspath(Base.HOME_PROJECT[])
+end
+
 using Documenter, PassiveTracerFlows
 
 makedocs(
    modules = [PassiveTracerFlows],
-   doctest = false, clean = true,
+   doctest = false,
+     clean = true,
  checkdocs = :all,
     format = :html,
    authors = "Gregory L. Wagner and Navid C. Constantinou",
@@ -18,9 +24,4 @@ makedocs(
              ]
 )
 
-deploydocs(
-       repo = "github.com/FourierFlows/PassiveTracerFlows.jl.git",
-     target = "build",
-      deps = nothing,
-      make = nothing
-)
+deploydocs( repo = "github.com/FourierFlows/PassiveTracerFlows.jl.git" )
