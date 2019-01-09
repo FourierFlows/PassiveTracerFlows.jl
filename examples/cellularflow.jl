@@ -29,7 +29,7 @@ psiin = @. psiampl * cos(m*x) * cos(n*y)
 uvel(x, y) = +psiampl * n * cos(m*x) * sin(n*y)
 vvel(x, y) = -psiampl * m * sin(m*x) * cos(n*y)
 
-prob = TracerAdvDiff.ConstDiffProblem(; steadyflow=true,
+prob = TracerAdvDiff.Problem(; steadyflow=true,
     nx=nx, Lx=Lx, kap=kap, u=uvel, v=vvel, dt=dt, stepper=stepper)
 
 sol, cl, v, p, g = prob.sol, prob.clock, prob.vars, prob.params, prob.grid

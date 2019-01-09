@@ -2,7 +2,7 @@
     test_constvel(; kwargs...)
 
 Advects a gaussian concentration c0(x, y, t) with a constant velocity flow
-u(x, y, t) = uvel and v(x, y, t) = vvel and compares the final state with
+u(x, y) = uvel and v(x, y) = vvel and compares the final state with
 cfinal = c0(x-uvel*tfinal, y-vvel*tfinal)
 """
 function test_constvel(stepper, dt, nsteps)
@@ -12,7 +12,7 @@ function test_constvel(stepper, dt, nsteps)
   u(x, y) = uvel
   v(x, y) = vvel
 
-  prob = TracerAdvDiff.Problem(; nx=nx, Lx=Lx, kap=0.0, u=u, v=v, dt=dt, stepper=stepper)
+  prob = TracerAdvDiff.Problem(; nx=nx, Lx=Lx, kap=0.0, u=u, v=v, dt=dt, stepper=stepper, steadyflow=true)
   sol, cl, v, p, g = prob.sol, prob.clock, prob.vars, prob.params, prob.grid
 
   x, y = gridpoints(g)
@@ -53,7 +53,7 @@ function test_timedependentvel(stepper, dt, tfinal)
   u(x, y, t) = uvel
   v(x, y, t) = t <= tfinal/2 ? vvel : -vvel
 
-  prob = TracerAdvDiff.ConstDiffProblem(; nx=nx, Lx=Lx, kap=0.0, u=u, v=v, dt=dt, stepper=stepper)
+  prob = TracerAdvDiff.Problem(; nx=nx, Lx=Lx, kap=0.0, u=u, v=v, dt=dt, stepper=stepper)
   sol, cl, v, p, g = prob.sol, prob.clock, prob.vars, prob.params, prob.grid
   x, y = gridpoints(g)
 
@@ -91,7 +91,7 @@ function test_diffusion(stepper, dt, tfinal; steadyflow = true)
   end
 
   grid = TwoDGrid(nx, Lx)
-  prob = TracerAdvDiff.ConstDiffProblem(; steadyflow=steadyflow, grid=grid, nx=nx,
+  prob = TracerAdvDiff.Problem(; steadyflow=steadyflow, grid=grid, nx=nx,
     Lx=Lx, kap=kap, dt=dt, stepper=stepper)
   sol, cl, v, p, g = prob.sol, prob.clock, prob.vars, prob.params, prob.grid
   x, y = gridpoints(g)
@@ -138,10 +138,10 @@ function test_hyperdiffusion(stepper, dt, tfinal; steadyflow = true)
    g = TwoDGrid(nx, Lx)
   x, y = gridpoints(g)
 
-  u, v = 0*x, 0*x
+  u, v = zero(x), zero(x) #0*x, 0*x
 
   vs = TracerAdvDiff.Vars(g)
-  pr = TracerAdvDiff.ConstDiffSteadyFlowParams(eta, kap, kaph, nkaph, u, v, g)
+  pr = TracerAdvDiff.ConstDiffSteadyFlowParams(eta, kap, kaph, nkaph, u, v)
   eq = TracerAdvDiff.Equation(pr, g)
   prob = FourierFlows.Problem(eq, stepper, dt, g, vs, pr)
 

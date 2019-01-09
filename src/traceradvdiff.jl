@@ -24,15 +24,7 @@ Construct a constant diffusivity problem with steady or time-varying flow.
 """
 noflow(args...) = 0.0 # used as defaults for u, v functions in Problem()
 
-Problem(; kwargs...) = ConstDiffProblem(; kwargs...) # only problem defined for now
-
-function flowargs(u)
-  umethods = methods(u)
-  length(umethods.ms) == 1 ? umethods.ms[1].nargs-1 : error("Either define steadyflow or use a flow function
-    with only one argument.")
-end
-
-function ConstDiffProblem(;
+function Problem(;
     nx = 128,
     Lx = 2π,
     ny = nx,
@@ -44,16 +36,8 @@ function ConstDiffProblem(;
      v = noflow,
     dt = 0.01,
   stepper = "RK4",
-  steadyflow = nothing
+  steadyflow = false
   )
-
-  if steadyflow==nothing # deduce whether flow is time-dependent
-    if (typeof(u) <: Function && flowargs(u) > 2) || (typeof(v) <: Function && flowargs(v) > 2)
-      steadyflow = false
-    else
-      steadyflow = true
-    end
-  end
 
   if steadyflow; pr = ConstDiffSteadyFlowParams(eta, kap, u, v, grid)
   else;          pr = ConstDiffParams(eta, kap, u, v)
@@ -96,28 +80,19 @@ ConstDiffParams(eta, kap, u, v) = ConstDiffParams(eta, kap, 0eta, 0, u, v)
 
 Returns the params for constant diffusivity problem with time-steady flow.
 """
-struct ConstDiffSteadyFlowParams{T} <: AbstractSteadyFlowParams
-  eta::T                 # Constant horizontal diffusivity
-  kap::T                 # Constant vertical diffusivity
-  kaph::T                # Constant isotropic hyperdiffusivity
-  nkaph::Int             # Constant isotropic hyperdiffusivity order
-  u::Array{T,2}          # Advecting x-velocity
-  v::Array{T,2}          # Advecting y-velocity
+struct ConstDiffSteadyFlowParams{T,A} <: AbstractSteadyFlowParams
+  eta::T       # Constant horizontal diffusivity
+  kap::T       # Constant vertical diffusivity
+  kaph::T      # Constant isotropic hyperdiffusivity
+  nkaph::Int   # Constant isotropic hyperdiffusivity order
+  u::A         # Advecting x-velocity
+  v::A         # Advecting y-velocity
 end
 
-function ConstDiffSteadyFlowParams(eta, kap, kaph, nkaph, u, v, g)
-  if typeof(u) <: Function
-    x, y = gridpoints(g)
-    ugrid = u.(x, y)
-  else
-    ugrid = u
-  end
-  if typeof(v) <: Function
-    x, y = gridpoints(g)
-    vgrid = v.(x, y)
-  else
-    vgrid = v
-  end
+function ConstDiffSteadyFlowParams(eta, kap, kaph, nkaph, u::Function, v::Function, g)
+  x, y = gridpoints(g)
+  ugrid = u.(x, y)
+  vgrid = v.(x, y)
   ConstDiffSteadyFlowParams(eta, kap, kaph, nkaph, ugrid, vgrid)
 end
 
