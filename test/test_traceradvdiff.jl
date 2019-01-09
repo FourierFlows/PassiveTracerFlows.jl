@@ -1,12 +1,8 @@
-# traceradvdiff.jl's test function
-
-import FourierFlows.TracerAdvDiff
-
 """
     test_constvel(; kwargs...)
 
 Advects a gaussian concentration c0(x, y, t) with a constant velocity flow
-u(x, y, t) = uvel and v(x, y, t) = vvel and compares the final state with
+u(x, y) = uvel and v(x, y) = vvel and compares the final state with
 cfinal = c0(x-uvel*tfinal, y-vvel*tfinal)
 """
 function test_constvel(stepper, dt, nsteps)
@@ -16,15 +12,17 @@ function test_constvel(stepper, dt, nsteps)
   u(x, y) = uvel
   v(x, y) = vvel
 
-  prob = TracerAdvDiff.Problem(; nx=nx, Lx=Lx, kap=0.0, u=u, v=v, dt=dt, stepper=stepper)
-  s, v, p, g = prob.state, prob.vars, prob.params, prob.grid
+  prob = TracerAdvDiff.Problem(; nx=nx, Lx=Lx, kap=0.0, u=u, v=v, dt=dt, stepper=stepper, steadyflow=true)
+  sol, cl, v, p, g = prob.sol, prob.clock, prob.vars, prob.params, prob.grid
+
+  x, y = gridpoints(g)
 
   σ = 0.1
   c0func(x, y) = 0.1*exp.(-(x.^2+y.^2)/(2σ^2))
 
-  c0 = c0func.(g.X, g.Y)
+  c0 = c0func.(x, y)
   tfinal = nsteps*dt
-  cfinal = c0func.(g.X .- uvel*tfinal, g.Y .- vvel*tfinal)
+  cfinal = @. c0func(x - uvel*tfinal, y - vvel*tfinal)
 
   TracerAdvDiff.set_c!(prob, c0)
 
@@ -55,15 +53,16 @@ function test_timedependentvel(stepper, dt, tfinal)
   u(x, y, t) = uvel
   v(x, y, t) = t <= tfinal/2 ? vvel : -vvel
 
-  prob = TracerAdvDiff.ConstDiffProblem(; nx=nx, Lx=Lx, kap=0.0, u=u, v=v, dt=dt, stepper=stepper)
-  s, v, p, g = prob.state, prob.vars, prob.params, prob.grid
+  prob = TracerAdvDiff.Problem(; nx=nx, Lx=Lx, kap=0.0, u=u, v=v, dt=dt, stepper=stepper)
+  sol, cl, v, p, g = prob.sol, prob.clock, prob.vars, prob.params, prob.grid
+  x, y = gridpoints(g)
 
   σ = 0.1
-  c0func(x, y) = 0.1*exp.(-(x.^2+y.^2)/(2σ^2))
+  c0func(x, y) = @. 0.1*exp(-(x^2+y^2)/(2σ^2))
 
-  c0 = c0func.(g.X, g.Y)
+  c0 = @. c0func(x, y)
   tfinal = nsteps*dt
-  cfinal = c0func.(g.X .- uvel*tfinal, g.Y)
+  cfinal = @. c0func(x - uvel*tfinal, y)
 
   TracerAdvDiff.set_c!(prob, c0func)
 
@@ -92,17 +91,18 @@ function test_diffusion(stepper, dt, tfinal; steadyflow = true)
   end
 
   grid = TwoDGrid(nx, Lx)
-  prob = TracerAdvDiff.ConstDiffProblem(; steadyflow=steadyflow, grid=grid, nx=nx,
+  prob = TracerAdvDiff.Problem(; steadyflow=steadyflow, grid=grid, nx=nx,
     Lx=Lx, kap=kap, dt=dt, stepper=stepper)
-  s, v, p, g = prob.state, prob.vars, prob.params, prob.grid
+  sol, cl, v, p, g = prob.sol, prob.clock, prob.vars, prob.params, prob.grid
+  x, y = gridpoints(g)
 
   c0ampl, σ = 0.1, 0.1
-  c0func(x, y) = c0ampl*exp.(-(x.^2+y.^2)/(2σ^2))
+  c0func(x, y) = @. c0ampl*exp(-(x^2+y^2)/(2σ^2))
 
-  c0 = c0func.(g.X, g.Y)
+  c0 = @. c0func.(x, y)
   tfinal = nsteps*dt
   σt = sqrt(2*kap*tfinal + σ^2)
-  cfinal = c0ampl*σ^2/σt^2 * exp.(-(g.X.^2 + g.Y.^2)/(2*σt^2))
+  cfinal = @. c0ampl*σ^2/σt^2 * exp(-(x^2+y^2)/(2*σt^2))
 
   TracerAdvDiff.set_c!(prob, c0)
 
@@ -136,22 +136,22 @@ function test_hyperdiffusion(stepper, dt, tfinal; steadyflow = true)
   end
 
    g = TwoDGrid(nx, Lx)
+  x, y = gridpoints(g)
 
-  u, v = 0*g.X, 0*g.X
+  u, v = zero(x), zero(x) #0*x, 0*x
 
   vs = TracerAdvDiff.Vars(g)
-  pr = TracerAdvDiff.ConstDiffSteadyFlowParams(eta, kap, kaph, nkaph, u, v, g)
+  pr = TracerAdvDiff.ConstDiffSteadyFlowParams(eta, kap, kaph, nkaph, u, v)
   eq = TracerAdvDiff.Equation(pr, g)
-  ts = FourierFlows.autoconstructtimestepper(stepper, dt, eq.LC, g)
-  prob = FourierFlows.Problem(g, vs, pr, eq, ts)
+  prob = FourierFlows.Problem(eq, stepper, dt, g, vs, pr)
 
   c0ampl, σ = 0.1, 0.1
-  c0func(x, y) = c0ampl*exp.(-(x.^2+y.^2)/(2σ^2))
+  c0func(x, y) = @. c0ampl*exp(-(x^2+y^2)/(2σ^2))
 
-  c0 = c0func.(g.X, g.Y)
+  c0 = @. c0func(x, y)
   tfinal = nsteps*dt
   σt = sqrt(2*kaph*tfinal + σ^2)
-  cfinal = c0ampl*σ^2/σt^2 * exp.(-(g.X.^2 + g.Y.^2)/(2*σt^2))
+  cfinal = @. c0ampl*σ^2/σt^2 * exp(-(x^2+y^2)/(2*σt^2))
 
   TracerAdvDiff.set_c!(prob, c0)
 
@@ -160,25 +160,3 @@ function test_hyperdiffusion(stepper, dt, tfinal; steadyflow = true)
 
   isapprox(cfinal, vs.c, rtol=g.nx*g.ny*nsteps*1e-12)
 end
-
-
-# --
-# Run tests
-# --
-
-stepper = "RK4"
-
-dt, nsteps  = 1e-2, 40
-@test test_constvel(stepper, dt, nsteps)
-
-dt, tfinal  = 0.002, 0.1
-@test test_timedependentvel(stepper, dt, tfinal)
-
-dt, tfinal  = 0.005, 0.1
-@test test_diffusion(stepper, dt, tfinal; steadyflow=true)
-
-dt, tfinal  = 0.005, 0.1
-@test test_diffusion(stepper, dt, tfinal; steadyflow=false)
-
-dt, tfinal  = 0.005, 0.1
-@test test_hyperdiffusion(stepper, dt, tfinal)
