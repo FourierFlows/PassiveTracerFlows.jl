@@ -7,7 +7,7 @@
      <a href="https://ci.appveyor.com/project/navidcy/passivetracerflows-jl">
           <img src="https://ci.appveyor.com/api/projects/status/yb5ywk9bof6u3nyg?svg=true" title="Build Status">
      </a>
-     <a href="https://GeophysicalFlows.github.io/PassiveTracerFlows.jl/stable/">
+     <a href="https://fourierflows.github.io/PassiveTracerFlows.jl/stable/">
          <img src="https://img.shields.io/badge/docs-stable-blue.svg">
      </a>
      <a href="https://fourierflows.github.io/PassiveTracerFlows.jl/latest/">
