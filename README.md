@@ -18,8 +18,8 @@
      <a href="https://codecov.io/gh/FourierFlows/PassiveTracerFlows.jl">
          <img src="https://codecov.io/gh/FourierFlows/PassiveTracerFlows.jl/branch/master/graph/badge.svg" title="codecov">
      </a>
-     <a href="https://doi.org/10.5281/zenodo.2535984">
-        <img src="https://zenodo.org/badge/DOI/10.5281/zenodo.2535984.svg" alt="DOI">
+     <a href="https://doi.org/10.5281/zenodo.2535983">
+        <img src="https://zenodo.org/badge/DOI/10.5281/zenodo.2535983.svg" alt="DOI">
     </a>
  </p>
 
