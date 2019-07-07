@@ -10,10 +10,13 @@
      <a href="https://GeophysicalFlows.github.io/PassiveTracerFlows.jl/stable/">
          <img src="https://img.shields.io/badge/docs-stable-blue.svg">
      </a>
-     <a href="https://fourierflows.github.io/PassiveTracerFlows.jl/latest/">
-         <img src="https://img.shields.io/badge/docs-latest-blue.svg">
+     <a href="https://fourierflows.github.io/PassiveTracerFlows.jl/dev/">
+         <img src="https://img.shields.io/badge/docs-dev-blue.svg">
      </a>
      <a href='https://coveralls.io/github/FourierFlows/PassiveTracerFlows.jl?branch=master'><img src='https://coveralls.io/repos/github/FourierFlows/PassiveTracerFlows.jl/badge.svg?branch=master' alt='Coverage Status' />
+     </a>
+     <a href="https://codecov.io/gh/FourierFlows/PassiveTracerFlows.jl">
+         <img src="https://codecov.io/gh/FourierFlows/PassiveTracerFlows.jl/branch/master/graph/badge.svg" title="codecov">
      </a>
      <a href="https://doi.org/10.5281/zenodo.2535984">
         <img src="https://zenodo.org/badge/DOI/10.5281/zenodo.2535984.svg" alt="DOI">
