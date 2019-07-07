@@ -160,3 +160,13 @@ function test_hyperdiffusion(stepper, dt, tfinal; steadyflow = true)
 
   isapprox(cfinal, vs.c, rtol=g.nx*g.ny*nsteps*1e-12)
 end
+
+
+"""
+    test_noflow(; kwargs...)
+
+Test the noflow function
+"""
+function test_noflow()
+  isapprox(TracerAdvDiff.noflow(rand(2, 3)), 0, rtol=rtol_traceradvdiff)
+end
