@@ -13,3 +13,5 @@
 docs/build/
 docs/site/
 coverage/
+
+.DS_store
