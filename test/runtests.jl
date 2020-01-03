@@ -18,6 +18,8 @@ testtime = @elapsed begin
 @testset "TracerAdvDiff" begin
   include("test_traceradvdiff.jl")
 
+  @test test_noflow()
+  
   stepper = "RK4"
   dt, nsteps  = 1e-2, 40
   @test test_constvel(stepper, dt, nsteps)

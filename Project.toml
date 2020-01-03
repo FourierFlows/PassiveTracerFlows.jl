@@ -1,8 +1,11 @@
 name = "PassiveTracerFlows"
-uuid = "4daca97c-b6ab-11e8-166d-ff56bdb6ebb2"
+uuid = "dc26d6a1-c8d5-50f2-8a17-f57a5c578a00"
 license = "MIT"
-authors = ["Gregory L. Wagner <wagner.greg@gmail.com>", "Navid C. Constantinou <navidcy@gmail.com>"]
+authors = ["Navid C. Constantinou <navidcy@gmail.com>", "Gregory L. Wagner <wagner.greg@gmail.com>"]
+documentation = "https://fourierflows.github.io/PassiveTracerFlows.jl/dev/"
+repository = "https://github.com/FourierFlows/PassiveTracerFlows.jl"
 version = "0.1.0"
+versions = ["0.1.0"]
 
 [deps]
 FFTW = "7a1cc6ca-52ef-59f5-83cd-3a7055c09341"
@@ -14,4 +17,13 @@ PyPlot = "d330b81b-6aea-500a-939a-2ce795aea3ee"
 Random = "9a3f8284-a2c9-5f02-9a11-845980a1fd5c"
 Reexport = "189a3867-3050-52da-a836-e630ba90ab69"
 Statistics = "10745b16-79ce-11e8-11f9-7d13ad32a3b2"
+
+[compat]
+FourierFlows = "≥ 0.3.0"
+julia = "≥ 1.0.0"
+
+[extras]
 Test = "8dfed614-e22c-5e08-85e1-65c5234f0b40"
+
+[targets]
+test = ["Test"]
