@@ -14,4 +14,4 @@ PassiveTracerFlows is currently being developed by [Gregory L. Wagner](https://g
 
 The code is citable via [zenodo](https://zenodo.org). Please cite as:
 
-> Gregory L. Wagner & Navid C. Constantinou. (2018). FourierFlows/FourierFlows.jl. Zenodo.  [https://doi.org/10.5281/zenodo.1161724](https://doi.org/10.5281/zenodo.1161724)
+> Navid C. Constantinou. and Gregory L. Wagner (2019). FourierFlows/PassiveTracerFlows.jl. Zenodo.  [https://doi.org/10.5281/zenodo.2535983](https://doi.org/10.5281/zenodo.2535983)
