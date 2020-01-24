@@ -1,16 +1,19 @@
 # PassiveTracerFlows.jl
 
  <p align="left">
-     <a href="https://travis-ci.org/FourierFlows/PassiveTracerFlows.jl">
-          <img src="https://travis-ci.org/FourierFlows/PassiveTracerFlows.jl.svg?branch=master" title="Build Status">
+     <a href="https://travis-ci.com/FourierFlows/PassiveTracerFlows.jl">
+         <img alt="Build Status for CPU" src="https://img.shields.io/travis/com/FourierFlows/PassiveTracerFlows.jl/master?label=CPU&logo=travis&logoColor=white&style=flat-square">
+     </a>
+     <a href="https://gitlab.com/JuliaGPU/PassiveTracerFlows-jl/commits/master">
+       <img alt="Build Status for GPU" src="https://img.shields.io/gitlab/pipeline/JuliaGPU/PassiveTracerFlows-jl/master?label=GPU&logo=gitlab&logoColor=white&style=flat-square">
      </a>
      <a href="https://ci.appveyor.com/project/navidcy/passivetracerflows-jl">
-          <img src="https://ci.appveyor.com/api/projects/status/yb5ywk9bof6u3nyg?svg=true" title="Build Status">
+         <img alt="Build Status for Window" src="https://img.shields.io/appveyor/ci/navidcy/passivetracerflows-jl/master?label=Window&logo=appveyor&logoColor=white&style=flat-square">
      </a>
-     <a href="https://fourierflows.github.io/PassiveTracerFlows.jl/stable/">
+     <a href="https://fourierflows.github.io/passivetracerflows.jl/stable/">
          <img src="https://img.shields.io/badge/docs-stable-blue.svg">
      </a>
-     <a href="https://fourierflows.github.io/PassiveTracerFlows.jl/dev/">
+     <a href="https://fourierflows.github.io/passivetracerflows.jl/dev/">
          <img src="https://img.shields.io/badge/docs-dev-blue.svg">
      </a>
      <!--<a href='https://coveralls.io/github/FourierFlows/PassiveTracerFlows.jl?branch=master'><img src='https://coveralls.io/repos/github/FourierFlows/PassiveTracerFlows.jl/badge.svg?branch=master' alt='Coverage Status' />
