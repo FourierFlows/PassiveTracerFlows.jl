@@ -16,8 +16,8 @@
      <a href="https://fourierflows.github.io/passivetracerflows.jl/dev/">
          <img src="https://img.shields.io/badge/docs-dev-blue.svg">
      </a>
-     <a href='https://coveralls.io/github/FourierFlows/PassiveTracerFlows.jl?branch=master'><img src='https://coveralls.io/repos/github/FourierFlows/PassiveTracerFlows.jl/badge.svg?branch=master' alt='Coverage Status' />
-     </a>
+     <!--<a href='https://coveralls.io/github/FourierFlows/PassiveTracerFlows.jl?branch=master'><img src='https://coveralls.io/repos/github/FourierFlows/PassiveTracerFlows.jl/badge.svg?branch=master' alt='Coverage Status' />
+     </a>-->
      <a href="https://codecov.io/gh/FourierFlows/PassiveTracerFlows.jl">
          <img src="https://codecov.io/gh/FourierFlows/PassiveTracerFlows.jl/branch/master/graph/badge.svg" title="codecov">
      </a>
