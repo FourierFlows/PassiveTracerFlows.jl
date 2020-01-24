@@ -39,10 +39,7 @@ function Problem(;
   steadyflow = false
   )
 
-  if steadyflow; pr = ConstDiffSteadyFlowParams(eta, kap, u, v, grid)
-  else;          pr = ConstDiffParams(eta, kap, u, v)
-  end
-
+  pr = steadyflow==true ? ConstDiffSteadyFlowParams(eta, kap, u, v, grid) : ConstDiffParams(eta, kap, u, v)
   vs = Vars(grid)
   eq = Equation(pr, grid)
 
@@ -125,11 +122,14 @@ end
 # Vars
 # --
 
-# Construct Vars types
- physicalvars = [:c, :cx, :cy]
-transformvars = [:ch, :cxh, :cyh]
-
-eval(FourierFlows.structvarsexpr(:Vars, physicalvars, transformvars))
+struct Vars{Aphys, Atrans} <: AbstractVars
+    c :: Aphys
+   cx :: Aphys
+   cy :: Aphys
+   ch :: Atrans
+  cxh :: Atrans
+  cyh :: Atrans
+end
 
 """
     Vars(g)
