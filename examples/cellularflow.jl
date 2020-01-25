@@ -4,8 +4,6 @@ using
   Printf,
   FourierFlows
 
-using FFTW: ifft
-
 import PassiveTracerFlows.TracerAdvDiff
 
 # Numerical parameters and time-stepping parameters
