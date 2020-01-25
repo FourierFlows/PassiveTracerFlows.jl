@@ -67,7 +67,6 @@ function test_timedependentvel(stepper, dt, tfinal, dev::Device=CPU(); uvel=0.5,
 
   stepforward!(prob, nsteps)
   TracerAdvDiff.updatevars!(prob)
-  pcolormesh(x, y, vs.c-cfinal);colorbar()
   isapprox(cfinal, vs.c, rtol=gr.nx*gr.ny*nsteps*1e-12)
 end
 
