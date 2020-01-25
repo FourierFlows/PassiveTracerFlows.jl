@@ -45,7 +45,7 @@ function Problem(;
   vs = Vars(dev, gr)
   eq = Equation(pr, gr)
 
-  FourierFlows.Problem(eq, stepper, dt, gr, vs, pr)
+  FourierFlows.Problem(eq, stepper, dt, gr, vs, pr, dev)
 end
 
 
