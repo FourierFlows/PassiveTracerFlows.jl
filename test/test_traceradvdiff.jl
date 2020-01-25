@@ -41,15 +41,16 @@ u(x, y, t) = uvel and v(x, y, t) = vvel*sign(-t+tfinal/2) and compares the final
 state with cfinal = c0(x-uvel*tfinal, y)
 """
 function test_timedependentvel(stepper, dt, tfinal, dev::Device=CPU())
-
+  
+  const tfinal
   nx, Lx = 128, 2π
   nsteps = round(Int, tfinal/dt)
 
   if !isapprox(tfinal, nsteps*dt, rtol=rtol_traceradvdiff)
     error("tfinal is not multiple of dt")
   end
-
-  uvel, vvel = 0.2, 0.12
+  
+  const uvel, vvel = 0.2, 0.12
   u(x, y, t) = uvel
   v(x, y, t) = vvel*cos(2π*t/tfinal)
 
