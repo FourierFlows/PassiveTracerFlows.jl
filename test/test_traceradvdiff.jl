@@ -40,36 +40,34 @@ Advects a gaussian concentration c0(x, y, t) with a time-varying velocity flow
 u(x, y, t) = uvel and v(x, y, t) = vvel*sign(-t+tfinal/2) and compares the final
 state with cfinal = c0(x-uvel*tfinal, y)
 """
-function test_timedependentvel(stepper, dt, tfinal, dev::Device=CPU())
+function test_timedependentvel(stepper, dt, tfinal, dev::Device=CPU(); uvel=0.5, αv=0.5)
   
-  const tfinal
   nx, Lx = 128, 2π
   nsteps = round(Int, tfinal/dt)
-
+  
   if !isapprox(tfinal, nsteps*dt, rtol=rtol_traceradvdiff)
     error("tfinal is not multiple of dt")
   end
   
-  const uvel, vvel = 0.2, 0.12
   u(x, y, t) = uvel
-  v(x, y, t) = vvel*cos(2π*t/tfinal)
+  v(x, y, t) = αv*t + αv*dt/2
 
   prob = TracerAdvDiff.Problem(; nx=nx, Lx=Lx, kap=0.0, u=u, v=v, dt=dt, stepper=stepper, dev=dev)
   sol, cl, vs, pr, gr = prob.sol, prob.clock, prob.vars, prob.params, prob.grid
   x, y = gridpoints(gr)
 
-  σ = 0.1
+  σ = 0.2
   c0func(x, y) = 0.1*exp(-(x^2+y^2)/(2σ^2))
 
   c0 = @. c0func(x, y)
   tfinal = nsteps*dt
-  cfinal = @. c0func(x - uvel*tfinal, y)
+  cfinal = @. c0func(x - uvel*tfinal, y - 0.5αv*tfinal^2)
 
   TracerAdvDiff.set_c!(prob, c0)
 
   stepforward!(prob, nsteps)
   TracerAdvDiff.updatevars!(prob)
-
+  pcolormesh(x, y, vs.c-cfinal);colorbar()
   isapprox(cfinal, vs.c, rtol=gr.nx*gr.ny*nsteps*1e-12)
 end
 
