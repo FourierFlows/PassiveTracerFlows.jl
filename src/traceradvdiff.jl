@@ -197,14 +197,12 @@ Update the vars in v on the grid g with the solution in sol.
 function updatevars!(prob)
   v, g, sol = prob.vars, prob.grid, prob.sol
   v.ch .= sol
-  ch1 = deepcopy(v.ch)
-  ldiv!(v.c, g.rfftplan, ch1)
+  ldiv!(v.c, g.rfftplan, deepcopy(v.ch))
   nothing
 end
 
 """
     set_c!(prob, c)
-    set_c!(prob, c::Function)
 
 Set the solution sol as the transform of c and update variables v
 on the grid g.
@@ -213,16 +211,6 @@ function set_c!(prob, c)
   sol, v, g = prob.sol, prob.vars, prob.grid
 
   mul!(sol, g.rfftplan, c)
-  updatevars!(prob)
-  nothing
-end
-
-function set_c!(prob, c::Function)
-  sol, v, g = prob.sol, prob.vars, prob.grid
-
-  x, y = gridpoints(g)
-  cgrid = c.(x, y)
-  mul!(sol, g.rfftplan, cgrid)
   updatevars!(prob)
   nothing
 end
