@@ -4,8 +4,8 @@ license = "MIT"
 authors = ["Navid C. Constantinou <navidcy@gmail.com>", "Gregory L. Wagner <wagner.greg@gmail.com>"]
 documentation = "https://fourierflows.github.io/PassiveTracerFlows.jl/dev/"
 repository = "https://github.com/FourierFlows/PassiveTracerFlows.jl"
-version = "0.1.0"
-versions = ["0.1.0"]
+version = "0.2.0"
+versions = ["0.1.0", "0.2.0"]
 
 [deps]
 CuArrays = "3a865a2d-5b23-5a0f-bc46-62713ec82fae"
