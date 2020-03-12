@@ -31,15 +31,15 @@ for dev in devices
     
     stepper = "RK4"
     dt, nsteps  = 1e-2, 40
-    @test test_constvel(stepper, dt, nsteps)
+    @test test_constvel(stepper, dt, nsteps, dev)
     dt, tfinal  = 0.002, 0.1
-    @test test_timedependentvel(stepper, dt, tfinal)
+    @test test_timedependentvel(stepper, dt, tfinal, dev)
     dt, tfinal  = 0.005, 0.1
-    @test test_diffusion(stepper, dt, tfinal; steadyflow=true)
+    @test test_diffusion(stepper, dt, tfinal, dev; steadyflow=true)
     dt, tfinal  = 0.005, 0.1
-    @test test_diffusion(stepper, dt, tfinal; steadyflow=false)
+    @test test_diffusion(stepper, dt, tfinal, dev; steadyflow=false)
     dt, tfinal  = 0.005, 0.1
-    @test test_hyperdiffusion(stepper, dt, tfinal)
+    @test test_hyperdiffusion(stepper, dt, tfinal, dev)
   end
     
 end
