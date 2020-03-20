@@ -27,8 +27,6 @@ for dev in devices
   @testset "TracerAdvDiff" begin
     include("test_traceradvdiff.jl")
 
-    @test test_noflow()
-    
     stepper = "RK4"
     dt, nsteps  = 1e-2, 40
     @test test_constvel(stepper, dt, nsteps, dev)
@@ -40,6 +38,8 @@ for dev in devices
     @test test_diffusion(stepper, dt, tfinal, dev; steadyflow=false)
     dt, tfinal  = 0.005, 0.1
     @test test_hyperdiffusion(stepper, dt, tfinal, dev)
+    
+    @test TracerAdvDiff.noflow() == 0
   end
     
 end

@@ -157,13 +157,3 @@ function test_hyperdiffusion(stepper, dt, tfinal, dev::Device=CPU(); steadyflow 
 
   isapprox(cfinal, vs.c, rtol=gr.nx*gr.ny*nsteps*1e-12)
 end
-
-
-"""
-    test_noflow(; kwargs...)
-
-Test the noflow function
-"""
-function test_noflow()
-  isapprox(TracerAdvDiff.noflow(rand(2, 3)), 0, rtol=rtol_traceradvdiff)
-end
