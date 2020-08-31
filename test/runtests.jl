@@ -37,7 +37,7 @@ for dev in devices
     dt, tfinal  = 0.005, 0.1
     @test test_hyperdiffusion(stepper, dt, tfinal, dev)
     
-    @test TracerAdvDiff.noflow() == 0
+    @test TracerAdvDiff.noflow(π) == 0
   end
     
 end
