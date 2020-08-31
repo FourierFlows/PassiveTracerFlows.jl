@@ -1,6 +1,5 @@
-#!/usr/bin/env julia
-
 using
+  CUDA,
   FourierFlows,
   Test,
   Statistics,
@@ -13,7 +12,6 @@ import # use 'import' rather than 'using' for submodules to keep namespace clean
 # the devices on which tests will run
 devices = (CPU(),)
 @has_cuda devices = (CPU(), GPU())
-@has_cuda using CuArrays
 
 const rtol_traceradvdiff = 1e-12 # tolerance for rtol_traceradvdiff tests
 

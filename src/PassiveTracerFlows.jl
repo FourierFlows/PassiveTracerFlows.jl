@@ -1,6 +1,8 @@
 module PassiveTracerFlows
 
-using FourierFlows
+using
+  CUDA,
+  FourierFlows
 
 include("traceradvdiff.jl")
 
