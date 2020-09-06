@@ -1,6 +1,5 @@
-#!/usr/bin/env julia
-
 using
+  CUDA,
   FourierFlows,
   Test,
   Statistics,
@@ -13,7 +12,6 @@ import # use 'import' rather than 'using' for submodules to keep namespace clean
 # the devices on which tests will run
 devices = (CPU(),)
 @has_cuda devices = (CPU(), GPU())
-@has_cuda using CuArrays
 
 const rtol_traceradvdiff = 1e-12 # tolerance for rtol_traceradvdiff tests
 
@@ -39,7 +37,7 @@ for dev in devices
     dt, tfinal  = 0.005, 0.1
     @test test_hyperdiffusion(stepper, dt, tfinal, dev)
     
-    @test TracerAdvDiff.noflow() == 0
+    @test TracerAdvDiff.noflow(π) == 0
   end
     
 end
