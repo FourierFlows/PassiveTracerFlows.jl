@@ -19,8 +19,6 @@ $$\partial_t \widehat{c} = - \widehat{\boldsymbol{u} \boldsymbol{\cdot} \boldsym
 Thus:
 
 ```math
-\begin{aligned*}
-\mathcal{L} &= -\eta k_x^2 - \kappa k_y^2 - \kappa_h k^{2\nu_h}\ , \\
-\mathcal{N}(\widehat{c}) &= - \mathrm{FFT}(u \partial_x c + \upsilon \partial_y c)\ .
-\end{aligned*}
+\mathcal{L} = -\eta k_x^2 - \kappa k_y^2 - \kappa_h k^{2\nu_h}\ , \\
+\mathcal{N}(\widehat{c}) = - \mathrm{FFT}(u \partial_x c + \upsilon \partial_y c)\ .
 ```
