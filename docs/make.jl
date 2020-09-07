@@ -23,13 +23,13 @@ makedocs(
            ],
            "DocStrings" => Any[
            "man/types.md",
-            "man/functions.md"]
+           "man/functions.md"]
            ]
 )
 
 withenv("GITHUB_REPOSITORY" => "FourierFlows/PassiveTracerFlowsDocumentation") do
   deploydocs(        repo = "github.com/FourierFlows/PassiveTracerFlowsDocumentation.git",
-                versions = ["stable" => "v^", "v#.#"],
+                versions = ["stable" => "v^", "v#.#", "dev" => "dev"],
             push_preview = true
             )
 end
