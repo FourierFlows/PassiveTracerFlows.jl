@@ -1,8 +1,3 @@
-# Workaround for JuliaLang/julia/pull/28625
-if Base.HOME_PROJECT[] !== nothing
-  Base.HOME_PROJECT[] = abspath(Base.HOME_PROJECT[])
-end
-
 using
   Documenter,
   PassiveTracerFlows
@@ -34,7 +29,7 @@ makedocs(
 
 withenv("GITHUB_REPOSITORY" => "FourierFlows/PassiveTracerFlowsDocumentation") do
   deploydocs(        repo = "github.com/FourierFlows/PassiveTracerFlowsDocumentation.git",
-                versions = ["stable" => "v^", "v#.#.#"],
+                versions = ["stable" => "v^", "v#.#"],
             push_preview = true
             )
 end
