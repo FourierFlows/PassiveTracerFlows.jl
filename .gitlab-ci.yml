@@ -10,10 +10,10 @@ include:
 image: nvidia/cuda:10.1-cudnn7-devel
 
 # the "primary" target, where we require a new GPU to make sure all tests are run
-julia:1.4:
+julia:1.5:
   image: juliagpu/cuda:10.1-cudnn7-cutensor1-devel-ubuntu18.04
   extends:
-    - .julia:1.4
+    - .julia:1.5
     - .test
   tags:
     - nvidia
@@ -21,15 +21,8 @@ julia:1.4:
   variables:
     CI_THOROUGH: 'true'
 
-julia:1.5:
-  extends:
-    - .julia:1.5
-    - .test
-  tags:
-    - nvidia
-
 # other tasks
 coverage:
   extends:
-    - .julia:1.4
+    - .julia:1.5
     - .coverage
