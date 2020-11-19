@@ -1,4 +1,4 @@
-module TracerAdvDiff
+module TracerAdvectionDiffusion
 
 export
    Problem,

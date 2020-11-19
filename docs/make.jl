@@ -19,7 +19,7 @@ makedocs(
      pages = Any[
            "Home" => "index.md",
            "Modules" => Any[
-           "modules/traceradvdiff.md",
+           "modules/traceradvectiondiffusion.md",
            ],
            "DocStrings" => Any[
            "man/types.md",
