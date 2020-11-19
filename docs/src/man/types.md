@@ -11,7 +11,7 @@ Order = [:type]
 ## Private types in module `PassiveTracerFlows`:
 
 ```@autodocs
-Modules = [PassiveTracerFlows.TracerAdvDiff]
+Modules = [PassiveTracerFlows.TracerAdvectionDiffusion]
 Public = false
 Order = [:type]
 ```

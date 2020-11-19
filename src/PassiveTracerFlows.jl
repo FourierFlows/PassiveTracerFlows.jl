@@ -4,6 +4,6 @@ using
   CUDA,
   FourierFlows
 
-include("traceradvdiff.jl")
+include("traceradvectiondiffusion.jl")
 
 end # module

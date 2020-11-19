@@ -37,7 +37,7 @@ This package leverages the [FourierFlows.jl]() framework to provide modules for 
 
  ## Modules
 
- * `TracerAdvDiff`: advection-diffusion of a passive tracer in a 2D domain.
+ * `TracerAdvectionDiffusion`: advection-diffusion of a passive tracer in a 2D domain.
 
 
  [FourierFlows.jl]: https://github.com/FourierFlows/FourierFlows.jl

@@ -9,10 +9,10 @@ Private = false
 Order = [:function]
 ```
 
-## Functions exported from `TracerAdvDiff`:
+## Functions exported from `TracerAdvectionDiffusion`:
 
 ```@autodocs
-Modules = [PassiveTracerFlows.TracerAdvDiff]
+Modules = [PassiveTracerFlows.TracerAdvectionDiffusion]
 Private = false
 Order = [:function]
 ```

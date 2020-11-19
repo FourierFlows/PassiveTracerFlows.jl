@@ -7,13 +7,13 @@ using
   FFTW
 
 import # use 'import' rather than 'using' for submodules to keep namespace clean
-  PassiveTracerFlows.TracerAdvDiff
+  PassiveTracerFlows.TracerAdvectionDiffusion
 
 # the devices on which tests will run
 devices = (CPU(),)
 @has_cuda devices = (CPU(), GPU())
 
-const rtol_traceradvdiff = 1e-12 # tolerance for rtol_traceradvdiff tests
+const rtol_traceradvectiondiffusion = 1e-12 # tolerance for rtol_traceradvdiff tests
 
 # Run tests
 testtime = @elapsed begin
@@ -22,8 +22,8 @@ for dev in devices
   
   println("testing on "*string(typeof(dev)))
 
-  @testset "TracerAdvDiff" begin
-    include("test_traceradvdiff.jl")
+  @testset "TracerAdvectionDiffusion" begin
+    include("test_traceradvectiondiffusion.jl")
 
     stepper = "RK4"
     dt, nsteps  = 1e-2, 40
@@ -37,7 +37,7 @@ for dev in devices
     dt, tfinal  = 0.005, 0.1
     @test test_hyperdiffusion(stepper, dt, tfinal, dev)
     
-    @test TracerAdvDiff.noflow(π) == 0
+    @test TracerAdvectionDiffusion.noflow(π) == 0
   end
     
 end
