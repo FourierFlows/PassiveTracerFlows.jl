@@ -28,8 +28,8 @@ makedocs(
 )
 
 withenv("GITHUB_REPOSITORY" => "FourierFlows/PassiveTracerFlowsDocumentation") do
-  deploydocs(        repo = "github.com/FourierFlows/PassiveTracerFlowsDocumentation.git",
+  deploydocs(       repo = "github.com/FourierFlows/PassiveTracerFlowsDocumentation.git",
                 versions = ["stable" => "v^", "v#.#", "dev" => "dev"],
-            push_preview = true
+            push_preview = false
             )
 end
