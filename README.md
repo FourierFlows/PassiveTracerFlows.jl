@@ -1,11 +1,9 @@
 # PassiveTracerFlows.jl
 
  <p align="left">
-     <a href="https://travis-ci.com/FourierFlows/PassiveTracerFlows.jl">
-         <img alt="Build Status for CPU" src="https://img.shields.io/travis/com/FourierFlows/PassiveTracerFlows.jl/master?label=CPU&logo=travis&logoColor=white&style=flat-square">
-     </a>
-     <a href="https://gitlab.com/JuliaGPU/PassiveTracerFlows-jl/commits/master">
-       <img alt="Build Status for GPU" src="https://img.shields.io/gitlab/pipeline/JuliaGPU/PassiveTracerFlows-jl/master?label=GPU&logo=gitlab&logoColor=white&style=flat-square">
+ <p align="center">
+     <a href="https://buildkite.com/julialang/passivetracerflows-dot-jl">
+         <img alt="Buildkite CPU+GPU build status" src="https://img.shields.io/buildkite/4d921fc17b95341ea5477fb62df0e6d9364b61b154e050a123/master?logo=buildkite&label=Buildkite%20CPU%2BGPU">
      </a>
      <a href="https://ci.appveyor.com/project/navidcy/passivetracerflows-jl">
          <img alt="Build Status for Window" src="https://img.shields.io/appveyor/ci/navidcy/passivetracerflows-jl/master?label=Window&logo=appveyor&logoColor=white&style=flat-square">
