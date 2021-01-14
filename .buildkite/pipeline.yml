@@ -2,6 +2,7 @@ env:
   JULIA_VERSION: "1.5.3"
   JULIA_MINOR_VERSION: "1.5"
   GKSwstype: "100" # See: https://github.com/jheinen/GR.jl/issues/278
+  SECRET_CODECOV_TOKEN: "ary5gKtRUF219HQVTWcg3ZUCIv0FduXSaCBeMwflkKXOIuX6Mj5wmygf+4asBTAcTtHGHWtdbtnSq8Tm52O5N++9TBk/B8CxL00EVB//UO9A0O9Rfd21eHK9Ic93mY+pjmHnyenAZCUobhPFI6U3caheEnclRNOuT1WkJkP/qQyJdHVuhofmxbqVtr/gcis+djB88nvEuUoaXg9n2jOCuNK45SUOfftrSPtQhbDyjYzrOQSbrAc2vo5biWDeqIPrFPFIdK4XN0fGhIMhSOGIvCFq8/0Lu2PjkHu29dFld/aZONsu+Cv/KufxGk0Cj3jwiRgVruv6UYzRB3h+DhP3Ng==;U2FsdGVkX18rAmNVfo0wTMqploN53sEN+gpiE8Yohb1QQFSLvb/+auGXpWypRg5NfujlwtGTWlLa/wru/4nDeA=="
 
 steps:
   - label: "Julia 1.5"
