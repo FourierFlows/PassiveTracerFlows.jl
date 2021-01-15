@@ -8,11 +8,11 @@
      <a href="https://ci.appveyor.com/project/navidcy/passivetracerflows-jl">
          <img alt="Build Status for Window" src="https://img.shields.io/appveyor/ci/navidcy/passivetracerflows-jl/master?label=Window&logo=appveyor&logoColor=white&style=flat-square">
      </a>
-     <a href="https://fourierflows.github.io/PassiveTracerFlowsDocumentation/stable/">
-         <img src="https://img.shields.io/badge/docs-stable-blue.svg">
+     <a href="https://FourierFlows.github.io/PassiveTracerFlowsDocumentation/stable">
+         <img alt="stable docs" src="https://img.shields.io/badge/documentation-stable%20release-blue">
      </a>
-     <a href="https://fourierflows.github.io/PassiveTracerFlowsDocumentation/latest/">
-         <img src="https://img.shields.io/badge/docs-dev-blue.svg">
+     <a href="https://FourierFlows.github.io/PassiveTracerFlowsDocumentation/dev">
+         <img alt="latest docs" src="https://img.shields.io/badge/documentation-in%20development-orange">
      </a>
      <a href="https://codecov.io/gh/FourierFlows/PassiveTracerFlows.jl">
          <img src="https://codecov.io/gh/FourierFlows/PassiveTracerFlows.jl/branch/master/graph/badge.svg" title="codecov">
