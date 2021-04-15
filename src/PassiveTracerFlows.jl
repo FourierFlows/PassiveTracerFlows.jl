@@ -2,8 +2,12 @@ module PassiveTracerFlows
 
 using
   CUDA,
-  FourierFlows
+  Reexport
+  
+@reexport using FourierFlows
 
 include("traceradvectiondiffusion.jl")
+
+@reexport using PassiveTracerFlows.TracerAdvectionDiffusion
 
 end # module
