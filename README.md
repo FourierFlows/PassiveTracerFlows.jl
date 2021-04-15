@@ -42,6 +42,6 @@ This package leverages the [FourierFlows.jl]() framework to provide modules for 
 
  The code is citable via [zenodo](https://zenodo.org). Please cite as:
 
- > Navid C. Constantinou. and Gregory L. Wagner (2021). FourierFlows/PassiveTracerFlows.jl: PassiveTracerFlows v0.4.1 (Version v0.4.1). Zenodo.  [https://doi.org/10.5281/zenodo.2535983](https://doi.org/10.5281/zenodo.2535983)
+ > Navid C. Constantinou. and Gregory L. Wagner (2021). FourierFlows/PassiveTracerFlows.jl: PassiveTracerFlows v0.5.0 (Version v0.5.0). Zenodo.  [https://doi.org/10.5281/zenodo.2535983](https://doi.org/10.5281/zenodo.2535983)
 
  [FourierFlows.jl]: https://github.com/FourierFlows/FourierFlows.jl

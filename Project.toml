@@ -4,7 +4,7 @@ license = "MIT"
 authors = ["Navid C. Constantinou <navidcy@gmail.com>", "Gregory L. Wagner <wagner.greg@gmail.com>"]
 documentation = "https://fourierflows.github.io/PassiveTracerFlowsDocumentation/dev/"
 repository = "https://github.com/FourierFlows/PassiveTracerFlows.jl"
-version = "0.4.1"
+version = "0.5.0"
 
 [deps]
 CUDA = "052768ef-5323-5732-b1bb-66c8b64840ba"
