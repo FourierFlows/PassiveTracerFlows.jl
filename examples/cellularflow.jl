@@ -41,6 +41,7 @@ L = 2π        # domain size
 κ = 0.002     # diffusivity
 nothing # hide
 
+
 # ## Set up cellular flow
 # We create a two-dimensional grid to construct the cellular flow. Our cellular flow is derived
 # from a streamfunction ``ψ(x, y) = ψ₀ \cos(x) \cos(y)`` as ``(u, v) = (-∂_y ψ, ∂_x ψ)``.
@@ -55,6 +56,8 @@ mx, my = 1, 1
 
 uvel(x, y) =  ψ₀ * mx * cos(mx * x) * sin(my * y)
 vvel(x, y) = -ψ₀ * my * sin(mx * x) * cos(my * y)
+nothing # hide
+
 
 # ## Problem setup
 # We initialize a `Problem` by providing a set of keyword arguments.
@@ -67,11 +70,10 @@ sol, clock, vars, params, grid = prob.sol, prob.clock, prob.vars, prob.params, p
 x, y = grid.x, grid.y
 nothing # hide
 
-# Initial condition c0 = c(x, y, t=0)
 
 # ## Setting initial conditions
 
-# Our initial condition for the tracer ``c`` is a gaussian centered at ``(x, y) = ( L_x/2, 0)``.
+# Our initial condition for the tracer ``c`` is a gaussian centered at ``(x, y) = (L_x/5, 0)``.
 
 gaussian(x, y, σ) = exp(-(x^2 + y^2) / (2σ^2))
 
