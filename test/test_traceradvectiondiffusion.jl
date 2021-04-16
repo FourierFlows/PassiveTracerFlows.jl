@@ -12,7 +12,7 @@ function test_constvel(stepper, dt, nsteps, dev::Device=CPU())
   u(x, y) = uvel
   v(x, y) = vvel
 
-  prob = TracerAdvectionDiffusion.Problem(; nx=nx, Lx=Lx, kap=0.0, u=u, v=v, dt=dt, stepper=stepper, steadyflow=true, dev=dev)
+  prob = TracerAdvectionDiffusion.Problem(dev; nx=nx, Lx=Lx, κ=0.0, u=u, v=v, dt=dt, stepper=stepper, steadyflow=true)
   sol, cl, vs, pr, gr = prob.sol, prob.clock, prob.vars, prob.params, prob.grid
 
   x, y = gridpoints(gr)
@@ -52,7 +52,7 @@ function test_timedependentvel(stepper, dt, tfinal, dev::Device=CPU(); uvel=0.5,
   u(x, y, t) = uvel
   v(x, y, t) = αv*t + αv*dt/2
 
-  prob = TracerAdvectionDiffusion.Problem(; nx=nx, Lx=Lx, kap=0.0, u=u, v=v, dt=dt, stepper=stepper, dev=dev)
+  prob = TracerAdvectionDiffusion.Problem(dev; nx=nx, Lx=Lx, κ=0.0, u=u, v=v, dt=dt, stepper=stepper)
   sol, cl, vs, pr, gr = prob.sol, prob.clock, prob.vars, prob.params, prob.grid
   x, y = gridpoints(gr)
 
@@ -79,17 +79,17 @@ the analytic solution of the heat equation, cfinal
 """
 function test_diffusion(stepper, dt, tfinal, dev::Device=CPU(); steadyflow = true)
 
-  nx  = 128
-  Lx  = 2π
-  kap = 0.01
+  nx = 128
+  Lx = 2π
+   κ = 0.01
   nsteps = round(Int, tfinal/dt)
 
   if !isapprox(tfinal, nsteps*dt, rtol=rtol_traceradvectiondiffusion)
     error("tfinal is not multiple of dt")
   end
 
-  prob = TracerAdvectionDiffusion.Problem(; steadyflow=steadyflow, nx=nx,
-    Lx=Lx, kap=kap, dt=dt, stepper=stepper, dev=dev)
+  prob = TracerAdvectionDiffusion.Problem(dev; steadyflow=steadyflow, nx=nx,
+    Lx=Lx, κ=κ, dt=dt, stepper=stepper)
   sol, cl, vs, pr, gr = prob.sol, prob.clock, prob.vars, prob.params, prob.grid
   x, y = gridpoints(gr)
 
@@ -98,7 +98,7 @@ function test_diffusion(stepper, dt, tfinal, dev::Device=CPU(); steadyflow = tru
 
   c0 = @. c0func(x, y)
   tfinal = nsteps*dt
-  σt = sqrt(2*kap*tfinal + σ^2)
+  σt = sqrt(2*κ*tfinal + σ^2)
   cfinal = @. c0ampl*(σ^2/σt^2)*exp(-(x^2+y^2)/(2*σt^2))
 
   TracerAdvectionDiffusion.set_c!(prob, c0)
@@ -118,13 +118,13 @@ compares the final state with the analytic solution of the heat equation, cfinal
 """
 function test_hyperdiffusion(stepper, dt, tfinal, dev::Device=CPU(); steadyflow = true)
 
-    nx  = 128
-    Lx  = 2π
-    kap = 0.0   # no diffusivity
-    eta = kap   # no diffusivity
-   kaph = 0.01  # hyperdiffusivity coeff
-  nkaph = 1     # nkaph=1 converts hyperdiffusivity to plain diffusivity
-                # so we can compare with the analytic solution of heat equation
+   nx = 128
+   Lx = 2π
+    κ = 0.0   # no diffusivity
+    η = κ     # no diffusivity
+   κh = 0.01  # hyperdiffusivity coeff
+  nκh = 1     # nκh=1 converts hyperdiffusivity to plain diffusivity
+              # so we can compare with the analytic solution of heat equation
 
   nsteps = round(Int, tfinal/dt)
 
@@ -138,7 +138,7 @@ function test_hyperdiffusion(stepper, dt, tfinal, dev::Device=CPU(); steadyflow 
   u, v = zero(x), zero(x) #0*x, 0*x
 
   vs = TracerAdvectionDiffusion.Vars(dev, gr)
-  pr = TracerAdvectionDiffusion.ConstDiffSteadyFlowParams(eta, kap, kaph, nkaph, u, v)
+  pr = TracerAdvectionDiffusion.ConstDiffSteadyFlowParams(η, κ, κh, nκh, u, v)
   eq = TracerAdvectionDiffusion.Equation(pr, gr)
   prob = FourierFlows.Problem(eq, stepper, dt, gr, vs, pr, dev)
 
@@ -147,7 +147,7 @@ function test_hyperdiffusion(stepper, dt, tfinal, dev::Device=CPU(); steadyflow 
 
   c0 = @. c0func(x, y)
   tfinal = nsteps*dt
-  σt = sqrt(2*kaph*tfinal + σ^2)
+  σt = sqrt(2*κh*tfinal + σ^2)
   cfinal = @. c0ampl*σ^2/σt^2 * exp(-(x^2+y^2)/(2*σt^2))
 
   TracerAdvectionDiffusion.set_c!(prob, c0)
