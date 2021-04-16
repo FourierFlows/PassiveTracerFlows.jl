@@ -1,4 +1,4 @@
-# # Advection-Diffusion by cellular flow
+# # Advection-diffusion of tracer by cellular flow
 #
 #md # This example can be viewed as a Jupyter notebook via [![](https://img.shields.io/badge/show-nbviewer-579ACA.svg)](@__NBVIEWER_ROOT_URL__/generated/cellularflow.ipynb).
 # 
@@ -58,7 +58,7 @@ vvel(x, y) = -ψ₀ * my * sin(mx * x) * cos(my * y)
 
 # ## Problem setup
 # We initialize a `Problem` by providing a set of keyword arguments.
-prob = TracerAdvectionDiffusion.Problem(dev; 
+prob = TracerAdvectionDiffusion.Problem(dev=dev,
                 steadyflow=true, nx=n, Lx=L, kap=κ, u=uvel, v=vvel, dt=dt, stepper=stepper)
 nothing # hide
 

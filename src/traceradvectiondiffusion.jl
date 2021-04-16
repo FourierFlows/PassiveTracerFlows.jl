@@ -36,7 +36,8 @@ function Problem(dev;
           dt = 0.01,
      stepper = "RK4",
   steadyflow = false,
-           T = Float64
+           T = Float64,
+         dev = CPU()
   )
   
   grid = TwoDGrid(dev, nx, Lx, ny, Ly; T=T)
