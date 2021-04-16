@@ -1,68 +1,144 @@
-using
-  PassiveTracerFlows,
-  PyPlot,
-  JLD2,
-  Printf
+# # Advection-diffusion of tracer by cellular flow
+#
+#md # This example can be viewed as a Jupyter notebook via [![](https://img.shields.io/badge/show-nbviewer-579ACA.svg)](@__NBVIEWER_ROOT_URL__/generated/cellularflow.ipynb).
+# 
+# An example demonstrating the advection-diffusion of a tracer by a cellular flow.
+#
+# ## Install dependencies
+#
+# First let's make sure we have all required packages installed.
 
-# Numerical parameters and time-stepping parameters
-nx  = 128         # 2D resolution = nx^2
-stepper = "RK4"   # timestepper
-dt  = 0.02        # timestep
-nsubs  = 200      # number of time-steps for plotting
-nsteps = 4nsubs   # total number of time-steps (must be multiple of nsubs)
+# ```julia
+# using Pkg
+# pkg"add PassiveTracerFlows, Plots, Printf"
+# ```
 
-# Physical parameters
-Lx  = 2π      # domain size
-kap = 0.002   # diffusivity
+# ## Let's begin
+# Let's load `PassiveTracerFlows.jl` and some other needed packages.
+#
+using PassiveTracerFlows, Plots, Printf
 
-gr = TwoDGrid(nx, Lx)
-x, y = gridpoints(gr)
 
-# streamfunction (for plotting) and (u,v) flow field
-psiampl = 0.2
-m, n = 1, 1
-psiin = @. psiampl * cos(m*x) * cos(n*y)
-uvel(x, y) = +psiampl * n * cos(m*x) * sin(n*y)
-vvel(x, y) = -psiampl * m * sin(m*x) * cos(n*y)
+# ## Choosing a device: CPU or GPU
 
-prob = TracerAdvectionDiffusion.Problem(; steadyflow=true,
-    nx=nx, Lx=Lx, kap=kap, u=uvel, v=vvel, dt=dt, stepper=stepper)
+dev = CPU()     # Device (CPU/GPU)
+nothing # hide
 
-sol, cl, v, p, g = prob.sol, prob.clock, prob.vars, prob.params, prob.grid
 
-# Initial condition c0 = c(x, y, t=0)
-amplc0, sigc0 = 0.1, 0.1
-c0func(x, y) = amplc0*exp(-(x^2+y^2)/(2sigc0^2))
-c0 = @. c0func(x-0.2Lx, y)
+# ## Numerical parameters and time-stepping parameters
 
-TracerAdvectionDiffusion.set_c!(prob, c0)
+      n = 128            # 2D resolution = n²
+stepper = "RK4"          # timestepper
+     dt = 0.02           # timestep
+ nsteps = 800            # total number of time-steps
+ nsubs  = 25             # number of time-steps for intermediate logging/plotting (nsteps must be multiple of nsubs)
+nothing # hide
 
-"Plot the concentration field and the (u, v) streamlines."
-function plotoutput(prob, fig, axs; drawcolorbar=false)
-  cl, v, p, g = prob.clock, prob.vars, prob.params, prob.grid
 
-  t = round(cl.t, digits=2)
-  TracerAdvectionDiffusion.updatevars!(prob)
+# ## Numerical parameters and time-stepping parameters
 
-  cla()
-  pcolormesh(x, y, v.c)
+L = 2π        # domain size
+κ = 0.002     # diffusivity
+nothing # hide
 
-  if drawcolorbar; colorbar(); end
 
-  contour(x, y, psiin, 15, colors="k", linewidths=0.7)
-  axis("equal")
-  axis("square")
-  title("shading: \$c(x, y, t= $t )\$, contours: \$\\psi(x, y)\$")
+# ## Set up cellular flow
+# We create a two-dimensional grid to construct the cellular flow. Our cellular flow is derived
+# from a streamfunction ``ψ(x, y) = ψ₀ \cos(x) \cos(y)`` as ``(u, v) = (-∂_y ψ, ∂_x ψ)``.
 
-  pause(0.001)
+grid = TwoDGrid(n, L)
+x, y = gridpoints(grid)
 
-  nothing
+ψ₀ = 0.2
+mx, my = 1, 1
+
+ψ = @. ψ₀ * cos(mx * x) * cos(my * y)
+
+uvel(x, y) =  ψ₀ * mx * cos(mx * x) * sin(my * y)
+vvel(x, y) = -ψ₀ * my * sin(mx * x) * cos(my * y)
+nothing # hide
+
+
+# ## Problem setup
+# We initialize a `Problem` by providing a set of keyword arguments.
+prob = TracerAdvectionDiffusion.Problem(; nx=n, Lx=L, kap=κ, steadyflow=true, u=uvel, v=vvel,
+                                          dt=dt, stepper=stepper, dev=dev)
+nothing # hide
+
+# and define some shortcuts
+sol, clock, vars, params, grid = prob.sol, prob.clock, prob.vars, prob.params, prob.grid
+x, y = grid.x, grid.y
+nothing # hide
+
+
+# ## Setting initial conditions
+
+# Our initial condition for the tracer ``c`` is a gaussian centered at ``(x, y) = (L_x/5, 0)``.
+
+gaussian(x, y, σ) = exp(-(x^2 + y^2) / (2σ^2))
+
+amplitude, spread = 0.5, 0.15
+c₀ = [amplitude * gaussian(x[i] - 0.2 * grid.Lx, y[j], spread) for i=1:grid.nx, j=1:grid.ny]
+
+TracerAdvectionDiffusion.set_c!(prob, c₀)
+nothing # hide
+
+# Let's plot the initial tracer concentration and streamlines. Note that when plotting, we decorate 
+# the variable to be plotted with `Array()` to make sure it is brought back on the CPU when 
+# `vars` live on the GPU.
+
+function plot_output(prob)
+  c = prob.vars.c
+  
+  p = heatmap(x, y, Array(vars.c'),
+         aspectratio = 1,
+              c = :balance,
+         legend = :false,
+           clim = (-0.2, 0.2),
+          xlims = (-grid.Lx/2, grid.Lx/2),
+          ylims = (-grid.Ly/2, grid.Ly/2),
+         xticks = -3:3,
+         yticks = -3:3,
+         xlabel = "x",
+         ylabel = "y",
+          title = "initial tracer concentration (shading) + streamlines",
+     framestyle = :box)
+
+  contour!(p, x, y, Array(ψ'),
+     levels=0.0125:0.025:0.2,
+     lw=2, c=:black, ls=:solid, alpha=0.7)
+
+  contour!(p, x, y, Array(ψ'),
+     levels=-0.1875:0.025:-0.0125,
+     lw=2, c=:black, ls=:dash, alpha=0.7)
+
+  return p
 end
+nothing # hide
 
-fig, axs = subplots(ncols=1, nrows=1, figsize=(8, 8))
-plotoutput(prob, fig, axs; drawcolorbar=true)
 
-while cl.step < nsteps
+# ## Time-stepping the `Problem` forward
+
+# We time-step the `Problem` forward in time.
+
+startwalltime = time()
+
+p = plot_output(prob)
+
+anim = @animate for j = 0:round(Int, nsteps/nsubs)
+
+ if j % (200 / nsubs) == 0
+    log = @sprintf("step: %04d, t: %d, walltime: %.2f min", 
+                   clock.step, clock.t, (time()-startwalltime)/60)
+    
+    println(log)
+  end  
+
+  p[1][1][:z] = Array(vars.c)
+  p[1][:title] = "concentration, t=" * @sprintf("%.2f", clock.t)
+
   stepforward!(prob, nsubs)
-  plotoutput(prob, fig, axs)
+  TracerAdvectionDiffusion.updatevars!(prob)
 end
+
+mp4(anim, "cellularflow.mp4", fps=12)

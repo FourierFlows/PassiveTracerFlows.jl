@@ -10,6 +10,12 @@
 **/*.cov
 **/Manifest.toml
 
+# Documenter.jl and MkDocs
+docs/build/
+docs/site/
+docs/src/generated
+docs/src/examples
+docs/Manifest.toml
 docs/build/
 docs/site/
 coverage/
