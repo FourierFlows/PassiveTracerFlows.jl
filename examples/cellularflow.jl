@@ -58,7 +58,7 @@ vvel(x, y) = -ψ₀ * my * sin(mx * x) * cos(my * y)
 
 # ## Problem setup
 # We initialize a `Problem` by providing a set of keyword arguments.
-prob = TracerAdvectionDiffusion.Problem(dev=dev,
+prob = TracerAdvectionDiffusion.Problem(; dev=dev,
                 steadyflow=true, nx=n, Lx=L, kap=κ, u=uvel, v=vvel, dt=dt, stepper=stepper)
 nothing # hide
 
