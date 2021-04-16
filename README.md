@@ -1,7 +1,7 @@
 # PassiveTracerFlows.jl
 
- <p align="left">
- <p align="center">
+<!-- Badges -->
+<p align="left">
      <a href="https://buildkite.com/julialang/passivetracerflows-dot-jl">
          <img alt="Buildkite CPU+GPU build status" src="https://img.shields.io/buildkite/4d921fc17b95341ea5477fb62df0e6d9364b61b154e050a123/master?logo=buildkite&label=Buildkite%20CPU%2BGPU">
      </a>
