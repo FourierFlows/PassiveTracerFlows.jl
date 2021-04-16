@@ -24,7 +24,7 @@ Construct a constant diffusivity problem with steady or time-varying flow.
 """
 noflow(args...) = 0.0 # used as defaults for u, v functions in Problem()
 
-function Problem(dev;
+function Problem(;
           nx = 128,
           Lx = 2π,
           ny = nx,
