@@ -24,7 +24,7 @@ Construct a constant diffusivity problem with steady or time-varying flow.
 """
 noflow(args...) = 0.0 # used as defaults for u, v functions in Problem()
 
-function Problem(;
+function Problem(dev;
           nx = 128,
           Lx = 2π,
           ny = nx,
@@ -36,8 +36,7 @@ function Problem(;
           dt = 0.01,
      stepper = "RK4",
   steadyflow = false,
-           T = Float64,
-         dev = CPU()
+           T = Float64
   )
   
   grid = TwoDGrid(dev, nx, Lx, ny, Ly; T=T)
