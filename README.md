@@ -24,24 +24,31 @@
 
 This package leverages the [FourierFlows.jl]() framework to provide modules for solving passive tracer advection-diffusion problems on periodic domains using Fourier-based pseudospectral methods.
 
- ## Installation
+## Installation
 
- To install, do
- ```julia
- ] add PassiveTracerFlows
- ```
+To install, use Julia's  built-in package manager (accessed by pressing `]` in the Julia REPL command prompt) to add the package and also to instantiate/build all the required dependencies
 
- See `examples/` for example scripts.
+```julia
+julia>]
+(v1.5) pkg> add PassiveTracerFlows
+(v1.5) pkg> instantiate
+```
 
- ## Modules
+The most recent version of GeophysicalFlows.jl requires Julia v1.5 or later.
 
- * `TracerAdvectionDiffusion`: advection-diffusion of a passive tracer in a 2D domain.
+## Examples
+
+See `examples/` for example scripts.
+
+## Modules
+
+* `TracerAdvectionDiffusion`: advection-diffusion of a passive tracer in a 2D domain.
 
 
- ## Cite
+## Cite
 
- The code is citable via [zenodo](https://zenodo.org). Please cite as:
+The code is citable via [zenodo](https://zenodo.org). Please cite as:
 
- > Navid C. Constantinou. and Gregory L. Wagner (2021). FourierFlows/PassiveTracerFlows.jl: PassiveTracerFlows v0.4.1 (Version v0.4.1). Zenodo.  [https://doi.org/10.5281/zenodo.2535983](https://doi.org/10.5281/zenodo.2535983)
+> Navid C. Constantinou. and Gregory L. Wagner (2021). FourierFlows/PassiveTracerFlows.jl: PassiveTracerFlows v0.5.0 (Version v0.5.0). Zenodo.  [https://doi.org/10.5281/zenodo.2535983](https://doi.org/10.5281/zenodo.2535983)
 
- [FourierFlows.jl]: https://github.com/FourierFlows/FourierFlows.jl
+[FourierFlows.jl]: https://github.com/FourierFlows/FourierFlows.jl

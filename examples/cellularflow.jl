@@ -1,10 +1,8 @@
 using
+  PassiveTracerFlows,
   PyPlot,
   JLD2,
-  Printf,
-  FourierFlows
-
-import PassiveTracerFlows.TracerAdvectionDiffusion
+  Printf
 
 # Numerical parameters and time-stepping parameters
 nx  = 128         # 2D resolution = nx^2
