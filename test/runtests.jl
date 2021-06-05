@@ -1,17 +1,14 @@
 using
-  CUDA,
-  FourierFlows,
+  PassiveTracerFlows,
   Test,
   Statistics,
-  Random,
-  FFTW
+  Random
 
 import # use 'import' rather than 'using' for submodules to keep namespace clean
   PassiveTracerFlows.TracerAdvectionDiffusion
 
 # the devices on which tests will run
-devices = (CPU(),)
-@has_cuda devices = (CPU(), GPU())
+devices = CUDA.has_cuda() ? (CPU(), GPU()) : (CPU(),)
 
 const rtol_traceradvectiondiffusion = 1e-12 # tolerance for rtol_traceradvdiff tests
 

@@ -5,9 +5,7 @@ export
    set_c!,
    updatevars!
 
-using
-  FFTW,
-  Reexport
+using Reexport
 
 @reexport using FourierFlows
 
