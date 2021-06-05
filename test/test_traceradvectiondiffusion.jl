@@ -18,7 +18,8 @@ function test_constvel(stepper, dt, nsteps, dev::Device=CPU())
   x, y = gridpoints(gr)
 
   σ = 0.1
-  c0func(x, y) = 0.1*exp(-(x^2+y^2)/(2σ^2))
+  c0ampl = 0.1
+  c0func(x, y) = c0ampl * exp(-(x^2+y^2)/(2σ^2))
 
   c0 = c0func.(x, y)
   tfinal = nsteps*dt
