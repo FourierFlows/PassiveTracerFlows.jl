@@ -105,7 +105,7 @@ struct ConstDiffSteadyFlowParams{T,A} <: AbstractSteadyFlowParams
    nκh :: Int
    "x-component of advecting flow"
       u :: A
-   "x-component of advecting flow"
+   "y-component of advecting flow"
       v :: A
 end
 
