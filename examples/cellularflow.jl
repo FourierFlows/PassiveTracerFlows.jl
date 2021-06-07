@@ -45,17 +45,15 @@ nothing # hide
 # ## Set up cellular flow
 # We create a two-dimensional grid to construct the cellular flow. Our cellular flow is derived
 # from a streamfunction ``ψ(x, y) = ψ₀ \cos(x) \cos(y)`` as ``(u, v) = (-∂_y ψ, ∂_x ψ)``.
-
 grid = TwoDGrid(n, L)
-x, y = gridpoints(grid)
 
 ψ₀ = 0.2
 mx, my = 1, 1
 
-ψ = @. ψ₀ * cos(mx * x) * cos(my * y)
+ψ = @. ψ₀ * cos(mx * grid.x) * cos(my * grid.y)
 
-uvel(x, y) =  ψ₀ * mx * cos(mx * x) * sin(my * y)
-vvel(x, y) = -ψ₀ * my * sin(mx * x) * cos(my * y)
+uvel(x, y) =  ψ₀ * my * cos(mx * x) * sin(my * y)
+vvel(x, y) = -ψ₀ * mx * sin(mx * x) * cos(my * y)
 nothing # hide
 
 

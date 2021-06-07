@@ -6,8 +6,8 @@ export
    updatevars!
 
 using
-  FFTW,
-  Reexport
+   DocStringExtensions,
+   Reexport
 
 @reexport using FourierFlows
 
@@ -57,37 +57,64 @@ abstract type AbstractConstDiffParams <: AbstractParams end
 abstract type AbstractSteadyFlowParams <: AbstractParams end
 
 """
-    ConstDiffParams(η, κ, κh, nκh, u, v)
-    ConstDiffParams(η, κ, u, v)
+    struct ConstDiffParams{T} <: AbstractConstDiffParams
 
-Returns the params for constant diffusivity problem with time-varying flow.
+A struct containing the parameters for a constant diffusivity problem with time-varying flow.
+Included are:
+
+$(TYPEDFIELDS)
 """
 struct ConstDiffParams{T} <: AbstractConstDiffParams
-  η :: T           # Constant isotropic horizontal diffusivity
-  κ :: T           # Constant isotropic vertical diffusivity
- κh :: T           # Constant isotropic hyperdiffusivity
-nκh :: Int         # Constant isotropic hyperdiffusivity order
-  u :: Function    # Advecting x-velocity
-  v :: Function    # Advecting y-velocity
+    "isotropic horizontal diffusivity coefficient"
+       η :: T
+    "isotropic vertical diffusivity coefficient"
+       κ :: T
+    "isotropic hyperdiffusivity coefficient"
+      κh :: T
+    "isotropic hyperdiffusivity order"  
+     nκh :: Int
+    "function returning the x-component of advecting flow"
+       u :: Function
+    "function returning the y-component of advecting flow"
+       v :: Function
 end
 
+"""
+    ConstDiffParams(η, κ, u, v)
+
+The constructor for the `params` struct for constant diffusivity problem and time-varying flow.
+"""
 ConstDiffParams(η, κ, u, v) = ConstDiffParams(η, κ, 0η, 0, u, v)
 
 """
-    ConstDiffSteadyFlowParams(η, κ, κh, nκh, u, v, g)
-    ConstDiffSteadyFlowParams(η, κ, u, v, g)
+    struct ConstDiffParams{T} <: AbstractConstDiffParams
 
-Returns the params for constant diffusivity problem with time-steady flow.
+A struct containing the parameters for a constant diffusivity problem with steady flow.
+Included are:
+
+$(TYPEDFIELDS)
 """
 struct ConstDiffSteadyFlowParams{T,A} <: AbstractSteadyFlowParams
-  η :: T           # Constant horizontal diffusivity
-  κ :: T           # Constant vertical diffusivity
- κh :: T           # Constant isotropic hyperdiffusivity
-nκh :: Int         # Constant isotropic hyperdiffusivity order
-  u :: A           # Advecting x-velocity
-  v :: A           # Advecting y-velocity
+  "isotropic horizontal diffusivity coefficient"
+     η :: T
+  "isotropic vertical diffusivity coefficient"
+     κ :: T
+  "isotropic hyperdiffusivity coefficient"
+    κh :: T
+  "isotropic hyperdiffusivity order"  
+   nκh :: Int
+   "x-component of advecting flow"
+      u :: A
+   "y-component of advecting flow"
+      v :: A
 end
 
+"""
+    ConstDiffSteadyFlowParams(η, κ, κh, nκh, u::Function, v::Function, grid)
+    ConstDiffSteadyFlowParams(η, κ, u, v, grid)
+
+The constructor for the `params` struct for constant diffusivity problem and steady flow.
+"""
 function ConstDiffSteadyFlowParams(η, κ, κh, nκh, u::Function, v::Function, grid)
    x, y = gridpoints(grid)
   ugrid = u.(x, y)
@@ -104,7 +131,7 @@ ConstDiffSteadyFlowParams(η, κ, u, v, grid) = ConstDiffSteadyFlowParams(η, κ
 # --
 
 """
-    Equation(p, g)
+    Equation(params, grid)
 
 Returns the equation for constant diffusivity problem with params p and grid g.
 """
@@ -125,19 +152,32 @@ end
 # Vars
 # --
 
+"""
+    struct Vars{Aphys, Atrans} <: AbstractVars
+
+The variables for TracerAdvectionDiffussion problems.
+
+$(FIELDS)
+"""
 struct Vars{Aphys, Atrans} <: AbstractVars
-    c :: Aphys
-   cx :: Aphys
-   cy :: Aphys
-   ch :: Atrans
-  cxh :: Atrans
-  cyh :: Atrans
+    "tracer concentration"
+       c :: Aphys
+    "tracer concentration x-derivative, ∂c/∂x"
+      cx :: Aphys
+    "tracer concentration y-derivative, ∂c/∂y"
+      cy :: Aphys
+    "Fourier transform of tracer concentration"
+      ch :: Atrans
+    "Fourier transform of tracer concentration x-derivative, ∂c/∂x"
+     cxh :: Atrans
+    "Fourier transform of tracer concentration y-derivative, ∂c/∂y"
+     cyh :: Atrans
 end
 
 """
-    Vars(g)
+    Vars(dev, grid)
 
-Returns the vars for constant diffusivity problem on grid g.
+Returns the variables `vars` for a constant diffusivity problem on `grid` and device `dev`.
 """
 function Vars(::Dev, grid::AbstractGrid{T}) where {Dev, T}
   @devzeros Dev T (grid.nx, grid.ny) c cx cy
