@@ -3,24 +3,13 @@ env:
   SECRET_CODECOV_TOKEN: "ary5gKtRUF219HQVTWcg3ZUCIv0FduXSaCBeMwflkKXOIuX6Mj5wmygf+4asBTAcTtHGHWtdbtnSq8Tm52O5N++9TBk/B8CxL00EVB//UO9A0O9Rfd21eHK9Ic93mY+pjmHnyenAZCUobhPFI6U3caheEnclRNOuT1WkJkP/qQyJdHVuhofmxbqVtr/gcis+djB88nvEuUoaXg9n2jOCuNK45SUOfftrSPtQhbDyjYzrOQSbrAc2vo5biWDeqIPrFPFIdK4XN0fGhIMhSOGIvCFq8/0Lu2PjkHu29dFld/aZONsu+Cv/KufxGk0Cj3jwiRgVruv6UYzRB3h+DhP3Ng==;U2FsdGVkX18rAmNVfo0wTMqploN53sEN+gpiE8Yohb1QQFSLvb/+auGXpWypRg5NfujlwtGTWlLa/wru/4nDeA=="
 
 steps:
-  - label: "🚴🏼 Julia 1.5"
-    plugins:
-      - JuliaCI/julia#v1:
-          version: 1.5
-      - JuliaCI/julia-test#v1: ~
-      - JuliaCI/julia-coverage#v1:
-          codecov: true
-    agents:
-      queue: "juliagpu"
-      cuda: "*"
-    if: build.message !~ /\[skip tests\]/
-    timeout_in_minutes: 60
-
   - label: "🏄🏽 Julia 1.6"
     plugins:
       - JuliaCI/julia#v1:
           version: 1.6
       - JuliaCI/julia-test#v1: ~
+      - JuliaCI/julia-coverage#v1:
+          codecov: true
     agents:
       queue: "juliagpu"
       cuda: "*"
