@@ -1,6 +1,6 @@
 # # Advection-diffusion of tracer by cellular flow
 #
-#md # This example can be viewed as a Jupyter notebook via [![](https://img.shields.io/badge/show-nbviewer-579ACA.svg)](@__NBVIEWER_ROOT_URL__/generated/cellularflow.ipynb).
+#md # This example can be viewed as a Jupyter notebook via [![](https://img.shields.io/badge/show-nbviewer-579ACA.svg)](@__NBVIEWER_ROOT_URL__/literated/cellularflow.ipynb).
 # 
 # An example demonstrating the advection-diffusion of a tracer by a cellular flow.
 #

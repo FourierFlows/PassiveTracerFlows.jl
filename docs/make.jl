@@ -14,7 +14,7 @@ ENV["GKSwstype"] = "100"
 #####
 
 const EXAMPLES_DIR = joinpath(@__DIR__, "..", "examples")
-const OUTPUT_DIR   = joinpath(@__DIR__, "src/generated")
+const OUTPUT_DIR   = joinpath(@__DIR__, "src/literated")
 
 examples = [
     "cellularflow.jl",
@@ -55,7 +55,7 @@ makedocs(
            "Home" => "index.md",
            "Examples" => Any[
              "TracerAdvectionDiffusion" => Any[
-               "generated/cellularflow.md",
+               "literated/cellularflow.md",
                ]
            ],
            "Modules" => Any[
