@@ -3,10 +3,10 @@
 <!-- Badges -->
 <p align="left">
      <a href="https://buildkite.com/julialang/passivetracerflows-dot-jl">
-         <img alt="Buildkite CPU+GPU build status" src="https://img.shields.io/buildkite/4d921fc17b95341ea5477fb62df0e6d9364b61b154e050a123/master?logo=buildkite&label=Buildkite%20CPU%2BGPU">
+         <img alt="Buildkite CPU+GPU build status" src="https://img.shields.io/buildkite/4d921fc17b95341ea5477fb62df0e6d9364b61b154e050a123/main?logo=buildkite&label=Buildkite%20CPU%2BGPU">
      </a>
      <a href="https://ci.appveyor.com/project/navidcy/passivetracerflows-jl">
-         <img alt="Build Status for Window" src="https://img.shields.io/appveyor/ci/navidcy/passivetracerflows-jl/master?label=Window&logo=appveyor&logoColor=white&style=flat-square">
+         <img alt="Build Status for Window" src="https://img.shields.io/appveyor/ci/navidcy/passivetracerflows-jl/main?label=Window&logo=appveyor&logoColor=white&style=flat-square">
      </a>
      <a href="https://FourierFlows.github.io/PassiveTracerFlowsDocumentation/stable">
          <img alt="stable docs" src="https://img.shields.io/badge/documentation-stable%20release-blue">
@@ -15,7 +15,7 @@
          <img alt="latest docs" src="https://img.shields.io/badge/documentation-in%20development-orange">
      </a>
      <a href="https://codecov.io/gh/FourierFlows/PassiveTracerFlows.jl">
-         <img src="https://codecov.io/gh/FourierFlows/PassiveTracerFlows.jl/branch/master/graph/badge.svg" title="codecov">
+         <img src="https://codecov.io/gh/FourierFlows/PassiveTracerFlows.jl/branch/main/graph/badge.svg" title="codecov">
      </a>
      <a href="https://doi.org/10.5281/zenodo.2535983">
         <img src="https://zenodo.org/badge/DOI/10.5281/zenodo.2535983.svg" alt="DOI">
@@ -30,11 +30,11 @@ To install, use Julia's  built-in package manager (accessed by pressing `]` in t
 
 ```julia
 julia>]
-(v1.5) pkg> add PassiveTracerFlows
-(v1.5) pkg> instantiate
+(v1.6) pkg> add PassiveTracerFlows
+(v1.6) pkg> instantiate
 ```
 
-The most recent version of GeophysicalFlows.jl requires Julia v1.5 or later.
+The most recent version of GeophysicalFlows.jl requires Julia v1.6 or later.
 
 ## Examples
 
@@ -49,6 +49,6 @@ See `examples/` for example scripts.
 
 The code is citable via [zenodo](https://zenodo.org). Please cite as:
 
-> Navid C. Constantinou. and Gregory L. Wagner (2021). FourierFlows/PassiveTracerFlows.jl: PassiveTracerFlows v0.5.1 (Version v0.5.1). Zenodo.  [https://doi.org/10.5281/zenodo.2535983](https://doi.org/10.5281/zenodo.2535983)
+> Navid C. Constantinou. and Gregory L. Wagner (2021). FourierFlows/PassiveTracerFlows.jl: PassiveTracerFlows v0.6.0 (Version v0.6.0). Zenodo.  [https://doi.org/10.5281/zenodo.2535983](https://doi.org/10.5281/zenodo.2535983)
 
 [FourierFlows.jl]: https://github.com/FourierFlows/FourierFlows.jl
