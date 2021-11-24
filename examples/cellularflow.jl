@@ -50,7 +50,7 @@ grid = TwoDGrid(n, L)
 ψ₀ = 0.2
 mx, my = 1, 1
 
-ψ = @. ψ₀ * cos(mx * grid.x) * cos(my * grid.y)
+ψ = [ψ₀ * cos(mx * grid.x[i]) * cos(my * grid.y[j]) for i in 1:grid.nx, j in 1:grid.ny]
 
 uvel(x, y) =  ψ₀ * my * cos(mx * x) * sin(my * y)
 vvel(x, y) = -ψ₀ * mx * sin(mx * x) * cos(my * y)
