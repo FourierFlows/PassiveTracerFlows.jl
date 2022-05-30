@@ -10,6 +10,9 @@
 **/*.cov
 **/Manifest.toml
 
+# vs code
+.vscode
+
 # Documenter.jl and MkDocs
 docs/build/
 docs/site/
