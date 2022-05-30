@@ -50,8 +50,8 @@ ADprob = TracerAdvectionDiffusion.Problem(dev, MQGprob; κ = κ, stepper = stepp
 # Initial condition for concentration in both layers
 gaussian(x, y, σ) = exp(-(x^2 + y^2) / (2σ^2))
 
-amplitude, spread = 1, 0.15
-c₀ = [gaussian(x[i], y[j], spread) for i=1:grid.nx, j=1:grid.ny]
+amplitude, spread = 10, 0.15
+c₀ = [amplitude * gaussian(x[i], y[j], spread) for i=1:grid.nx, j=1:grid.ny]
 
 TracerAdvectionDiffusion.set_c!(ADprob, c₀, nlayers)
 
@@ -69,7 +69,7 @@ saveproblem(output)
 
 # Step the problem forward and save the output
 
-save_frequency = 100 # Freqeuncy at which output is saved
+save_frequency = 50 # Freqeuncy at which output is saved
 
 startwalltime = time()
 while clock.step <= nsteps
@@ -110,12 +110,12 @@ plot_args = (xlabel = "x",
             colorbar = true,
             colorbar_title = " \nConcentration",
             color = :deep)
-climits = (minimum(Cᵤ[1]), maximum(Cᵤ[1]))
-p = heatmap(x, y, Cᵤ[1]', title = "Concentration, t = $(t[1])", clims = climits; plot_args...)
+#climits = (minimum(Cᵤ[1]), maximum(Cᵤ[1]))
+p = heatmap(x, y, Cᵤ[1]', title = "Concentration, t = $(t[1])"; plot_args...)
 conc_anim = @animate for i ∈ 2:length(t)
 
-    climits = (minimum(Cᵤ[i]), maximum(Cᵤ[i]))
-    heatmap!(p, x, y, Cᵤ[i]', title = "Concentration, t = $(t[i])", clims = climits; plot_args...)
+    #climits = (minimum(Cᵤ[i]), maximum(Cᵤ[i]))
+    heatmap!(p, x, y, Cᵤ[i]', title = "Concentration, t = $(t[i])"; plot_args...)
 
 end
 
