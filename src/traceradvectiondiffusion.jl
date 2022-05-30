@@ -57,11 +57,18 @@ function Problem(dev, MQGprob::FourierFlows.Problem;
                 κ = 0.1,
                 η = κ,
           stepper = "FilteredRK4",
-   tracer_release = 0.0
+   tracer_release = 0
   )
   
   nlayers = MQGprob.params.nlayers
   grid = MQGprob.grid
+  if tracer_release != 0
+    @info "Stepping the flow forward"
+    while MQGprob.clock.t < tracer_release
+        MultiLayerQG.stepforward!(MQGprob)
+        MultiLayerQG.updatevars!(MQGprob)
+    end
+  end
   params = TurbulentFlowParams(η, κ, nlayers, tracer_release, MQGprob)
   vars = Vars(dev, grid, nlayers)
   equation = Equation(params, grid)
@@ -202,7 +209,7 @@ function Equation(params::ConstDiffSteadyFlowParams, grid)
   return FourierFlows.Equation(L, calcN_steadyflow!, grid)
 end
 
-function Equation(params::TurbulentFlowParams, grid)
+function Equation(params::AbstractTurbulentFlowParams, grid)
 
     L = zeros(grid.nkr, grid.nl, params.nlayers)
     for n in 1:params.nlayers
@@ -312,17 +319,21 @@ end
 
 Calculate the advective terms for a tracer equation with constant diffusivity and turbulent `MultiLayerQG` flow.
 """
-function calcN_turbulentflow!(N, sol, t, clock, vars, grid, params::AbstractTurbulentFlowParams)
+function calcN_turbulentflow!(N, sol, t, clock, vars, params::AbstractTurbulentFlowParams, grid)
     @. vars.cxh = im * grid.kr * sol
     @. vars.cyh = im * grid.l  * sol
   
-    ldiv!(vars.cx, grid.rfftplan, vars.cxh) # destroys vars.cxh when using fftw
-    ldiv!(vars.cy, grid.rfftplan, vars.cyh) # destroys vars.cyh when using fftw
+    MultiLayerQG.invtransform!(vars.cx, vars.cxh, params.MQGprob.params)
+    MultiLayerQG.invtransform!(vars.cy, vars.cyh, params.MQGprob.params)
   
     u = @. params.MQGprob.vars.u + params.MQGprob.params.U
     v = params.MQGprob.vars.u
+    # Step the flow forward for next iteration
+    MultiLayerQG.stepforward!(params.MQGprob)
+    MultiLayerQG.updatevars!(params.MQGprob)
     @. vars.cx = -u * vars.cx - v * vars.cy # copies over vars.cx so vars.cx = N in physical space
-    mul!(N, grid.rfftplan, vars.cx)
+
+    MultiLayerQG.fwdtransform!(N, vars.cx, params.MQGprob.params)
     
     return nothing
   end
@@ -334,7 +345,7 @@ function calcN_turbulentflow!(N, sol, t, clock, vars, grid, params::AbstractTurb
 """
     updatevars!(prob)
 
-Update the vars in v on the grid g with the solution in sol.
+Update the `vars` on the `grid` with the solution in `sol`.
 """
 function updatevars!(prob)
   vars, grid, sol = prob.vars, prob.grid, prob.sol
@@ -343,6 +354,21 @@ function updatevars!(prob)
   
   ldiv!(vars.c, grid.rfftplan, deepcopy(vars.ch))
   
+  return nothing
+end
+"""
+    function MQGupdatevars!(prob)
+
+Update the `vars`` on the `grid` with the solution in `sol` for a `Problem`
+being advected by a turbulent flow.     
+"""
+function MQGupdatevars!(prob)
+  vars, grid, sol = prob.vars, prob.grid, prob.sol
+  
+  @. vars.ch = sol
+  
+  MultiLayerQG.invtransform!(vars.c, deepcopy(vars.ch), prob.params.MQGprob.params)
+
   return nothing
 end
 
@@ -360,6 +386,29 @@ function set_c!(prob, c)
   updatevars!(prob)
   
   return nothing
+end
+
+function set_c!(prob, c, nlayers)
+  sol, vars, grid = prob.sol, prob.vars, prob.grid
+
+  C = Array{Float64}(undef, grid.nx, grid.ny, nlayers)
+  if size(c) == size(C)
+
+    @. C = c
+
+  else
+
+    for n in 1:nlayers
+        C[:, :, n] = c
+    end
+
+  end
+  
+  MultiLayerQG.fwdtransform!(sol, C, prob.params.MQGprob.params)
+  MQGupdatevars!(prob)
+
+  return nothing
+
 end
 
 end # module
