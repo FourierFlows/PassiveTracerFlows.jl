@@ -57,7 +57,7 @@ function Problem(dev, MQGprob::FourierFlows.Problem;
                 κ = 0.1,
                 η = κ,
           stepper = "FilteredRK4",
-   tracer_release = 0
+   tracer_release = 0.0
   )
   
   nlayers = MQGprob.params.nlayers
@@ -387,7 +387,13 @@ function set_c!(prob, c)
   
   return nothing
 end
+"""
+    function set_c!(prob, c, nlayers)
 
+Set the initial condition for tracer concentration in all layers of a
+`TracerAdvectionDiffusion.Problem` that uses a `MultiLayerQG` flow to 
+advect the tracer.
+"""
 function set_c!(prob, c, nlayers)
   sol, vars, grid = prob.sol, prob.vars, prob.grid
 
