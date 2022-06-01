@@ -13,7 +13,7 @@
 #
 # ## Let's begin
 # First load `PassiveTracerFlows.jl` and the other packages needed to run this example.
-using PassiveTracerFlows, Printf, Plots, JLD2
+using PassiveTracerFlows, Printf, Plots, JLD2, LinearAlgebra
 using Random: seed!
 
 # ## Choosing a device: CPU or GPU
