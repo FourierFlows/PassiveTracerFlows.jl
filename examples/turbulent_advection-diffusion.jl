@@ -161,7 +161,7 @@ plot_args = (xlabel = "x",
 p = heatmap(x, y, cₗ[1]', title = "Concentration, t = " * @sprintf("%.2f", t[1]); plot_args...)
 conc_anim = @animate for i ∈ 2:length(t)
 
-    heatmap!(p, x, y, Cₗ[i]', title = "Concentration, t = $(t[i])"; plot_args...)
+    heatmap!(p, x, y, cₗ[i]', title = "Concentration, t = $(t[i])"; plot_args...)
 
 end
 
