@@ -48,8 +48,8 @@ f₀, g = 1, 1             # Coriolis parameter and gravitational constant
 
 # ### `MultiLayerQG.Problem` setup, shortcuts and initial conditions
 MQGprob = MultiLayerQG.Problem(nlayers, dev;
-                        nx=n, Lx=L, f₀=f₀, g=g, H=H, ρ=ρ, U=U, μ=μ, β=β,
-                        dt=dt, stepper=stepper, aliased_fraction=0)
+                               nx=n, Lx=L, f₀, g, H, ρ, U, μ, β,
+                               dt, stepper, aliased_fraction=0)
 grid = MQGprob.grid
 x, y = grid.x, grid.y
 
@@ -57,7 +57,7 @@ x, y = grid.x, grid.y
 seed!(1234) # reset of the random number generator for reproducibility
 q₀  = 1e-2 * ArrayType(dev)(randn((grid.nx, grid.ny, nlayers)))
 q₀h = MQGprob.timestepper.filter .* rfft(q₀, (1, 2)) # apply rfft  only in dims=1, 2
-q₀  = irfft(q₀h, grid.nx, (1, 2))                 # apply irfft only in dims=1, 2
+q₀  = irfft(q₀h, grid.nx, (1, 2))                    # apply irfft only in dims=1, 2
 
 MultiLayerQG.set_q!(MQGprob, q₀)
 nothing 

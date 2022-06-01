@@ -56,19 +56,19 @@ end
 Construct a constant diffusivity problem with a turbulent flow from the `GeophysicalFlows.jl` package.
 """
 function Problem(dev, MQGprob::FourierFlows.Problem;
-                κ = 0.1,
-                η = κ,
-          stepper = "FilteredRK4",
-   tracer_release = 0.0
+                     κ = 0.1,
+                     η = κ,
+               stepper = "FilteredRK4",
+   tracer_release_time = 0
   )
   
   nlayers = typeof(MQGprob.params) <: SingleLayerParams ? 1 : 
             typeof(MQGprob.params) <: TwoLayerParams ? 2 : MQGprob.params.nlayers
 
   grid = MQGprob.grid
-  if tracer_release != 0
+  if tracer_release_time != 0
     @info "Stepping the flow forward"
-    while MQGprob.clock.t < tracer_release
+    while MQGprob.clock.t < tracer_release_time
         MultiLayerQG.stepforward!(MQGprob)
         MultiLayerQG.updatevars!(MQGprob)
     end
@@ -186,11 +186,11 @@ tracer_release :: T
 end
 
 """
-    TurbulentFlowParams(η, κ, nlayers, tracer_release)
+    TurbulentFlowParams(η, κ, nlayers, tracer_release_time)
 
 The constructor for the `params` struct for a constant diffusivity and turbulent flow.    
 """
-TurbulentFlowParams(η, κ, nlayers, tracer_release, MQGprob) = TurbulentFlowParams(η, κ, 0η, 0, nlayers, tracer_release, MQGprob)
+TurbulentFlowParams(η, κ, nlayers, tracer_release_time, MQGprob) = TurbulentFlowParams(η, κ, 0η, 0, nlayers, tracer_release_time, MQGprob)
 
 # --
 # Equations
