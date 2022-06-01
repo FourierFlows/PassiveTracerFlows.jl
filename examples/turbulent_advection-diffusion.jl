@@ -158,7 +158,7 @@ plot_args = (xlabel = "x",
              colorbar_title = " \nConcentration",
              color = :deep)
 
-p = heatmap(x, y, Cₗ[1]', title = "Concentration, t = $(t[1])"; plot_args...)
+p = heatmap(x, y, cₗ[1]', title = "Concentration, t = " * @sprintf("%.2f", t[1]); plot_args...)
 conc_anim = @animate for i ∈ 2:length(t)
 
     heatmap!(p, x, y, Cₗ[i]', title = "Concentration, t = $(t[i])"; plot_args...)
