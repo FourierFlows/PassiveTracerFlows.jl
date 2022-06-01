@@ -2,6 +2,7 @@ using
   PassiveTracerFlows,
   Test,
   Statistics,
+  CUDA,
   Random
 
 import # use 'import' rather than 'using' for submodules to keep namespace clean
