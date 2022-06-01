@@ -169,20 +169,20 @@ A struct containing the parameters for a constant diffusivity problem and turbul
 $(TYPEDFIELDS)
 """
 struct TurbulentFlowParams{T} <: AbstractTurbulentFlowParams
-            "isotropic horizontal diffusivity coefficient"
-             η :: T
-            "isotropic vertical diffusivity coefficient"
-             κ :: T
-            "isotropic hyperdiffusivity coefficient"
-            κh :: T
-            "isotropic hyperdiffusivity order"  
-           nκh :: Int
-            "number of layers in which the tracer is advected-diffused"
-       nlayers :: Int 
-            "flow time prior to releasing tracer"
-tracer_release :: T
-            "`MultiLayerQG.Problem` to generate the advecting flow"
-       MQGprob :: FourierFlows.Problem            
+  "isotropic horizontal diffusivity coefficient"
+                   η :: T
+  "isotropic vertical diffusivity coefficient"
+                   κ :: T
+  "isotropic hyperdiffusivity coefficient"
+                  κh :: T
+  "isotropic hyperdiffusivity order"  
+                  nκh :: Int
+  "number of layers in which the tracer is advected-diffused"
+              nlayers :: Int 
+  "flow time prior to releasing tracer"
+  tracer_release_time :: T
+  "`MultiLayerQG.Problem` to generate the advecting flow"
+              MQGprob :: FourierFlows.Problem            
 end
 
 """
@@ -190,7 +190,8 @@ end
 
 The constructor for the `params` struct for a constant diffusivity and turbulent flow.    
 """
-TurbulentFlowParams(η, κ, nlayers, tracer_release_time, MQGprob) = TurbulentFlowParams(η, κ, 0η, 0, nlayers, tracer_release_time, MQGprob)
+TurbulentFlowParams(η, κ, nlayers, tracer_release_time, MQGprob) =
+  TurbulentFlowParams(η, κ, 0η, 0, nlayers, tracer_release_time, MQGprob)
 
 # --
 # Equations
@@ -213,12 +214,13 @@ function Equation(params::ConstDiffSteadyFlowParams, grid)
   return FourierFlows.Equation(L, calcN_steadyflow!, grid)
 end
 
-function Equation(params::AbstractTurbulentFlowParams, grid)
-
+function Equation(params::TurbulentFlowParams, grid)
     L = zeros(grid.nkr, grid.nl, params.nlayers)
+
     for n in 1:params.nlayers
         @. L[:, :, n] = -params.η * grid.kr^2 - params.κ * grid.l^2 - params.κh * grid.Krsq^params.nκh
     end
+
     return FourierFlows.Equation(L, calcN_turbulentflow!, grid)
   end
 
@@ -262,17 +264,16 @@ function Vars(::Dev, grid::AbstractGrid{T}) where {Dev, T}
 end
 
 function Vars(::Dev, grid::AbstractGrid{T}, nlayers::Int) where {Dev, T}
-
-    if nlayers == 1
-      @devzeros Dev T (grid.nx, grid.ny) c cx cy
-      @devzeros Dev Complex{T} (grid.nkr, grid.nl) ch cxh cyh
-    else
-      @devzeros Dev T (grid.nx, grid.ny, nlayers) c cx cy
-      @devzeros Dev Complex{T} (grid.nkr, grid.nl, nlayers) ch cxh cyh
-    end
-    
-    return Vars(c, cx, cy, ch, cxh, cyh)
+  if nlayers == 1
+    @devzeros Dev T (grid.nx, grid.ny) c cx cy
+    @devzeros Dev Complex{T} (grid.nkr, grid.nl) ch cxh cyh
+  else
+    @devzeros Dev T (grid.nx, grid.ny, nlayers) c cx cy
+    @devzeros Dev Complex{T} (grid.nkr, grid.nl, nlayers) ch cxh cyh
   end
+  
+  return Vars(c, cx, cy, ch, cxh, cyh)
+end
 
 
 
@@ -332,6 +333,7 @@ function calcN_turbulentflow!(N, sol, t, clock, vars, params::AbstractTurbulentF
   
     u = @. params.MQGprob.vars.u + params.MQGprob.params.U
     v = params.MQGprob.vars.u
+
     # Step the flow forward for next iteration
     MultiLayerQG.stepforward!(params.MQGprob)
     MultiLayerQG.updatevars!(params.MQGprob)
@@ -360,11 +362,12 @@ function updatevars!(prob)
   
   return nothing
 end
-"""
-    function MQGupdatevars!(prob)
 
-Update the `vars`` on the `grid` with the solution in `sol` for a `Problem`
-being advected by a turbulent flow.     
+"""
+    MQGupdatevars!(prob)
+
+Update the `vars`` on the `grid` with the solution in `sol` for a problem `prob`
+that is being advected by a turbulent flow.     
 """
 function MQGupdatevars!(prob)
   vars, grid, sol = prob.vars, prob.grid, prob.sol
@@ -391,6 +394,7 @@ function set_c!(prob, c)
   
   return nothing
 end
+
 """
     function set_c!(prob, c, nlayers)
 
@@ -402,23 +406,19 @@ function set_c!(prob, c, nlayers)
   sol, vars, grid = prob.sol, prob.vars, prob.grid
 
   C = Array{Float64}(undef, grid.nx, grid.ny, nlayers)
+
   if size(c) == size(C)
-
     @. C = c
-
   else
-
     for n in 1:nlayers
         C[:, :, n] = c
     end
-
   end
   
   MultiLayerQG.fwdtransform!(sol, C, prob.params.MQGprob.params)
   MQGupdatevars!(prob)
 
   return nothing
-
 end
 
 end # module
