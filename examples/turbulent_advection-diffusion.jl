@@ -144,7 +144,7 @@ conc_data = load("advection-diffusion.jld2")
 saved_data = 0:conc_data["save_frequency"]:conc_data["final_step"]
 t = [conc_data["snapshots/t/"*string(i)] for i ∈ saved_data]
 # Concentration time series in the lower layer
-Cₗ = [abs.(conc_data["snapshots/Concentration/"*string(i)][:, :, 2]) for i ∈ saved_data]
+cₗ = [abs.(conc_data["snapshots/concentration/"*string(i)][:, :, 2]) for i ∈ saved_data]
 
 x, y,  = conc_data["grid/x"], conc_data["grid/y"]
 Lx, Ly = conc_data["grid/Lx"], conc_data["grid/Ly"]
