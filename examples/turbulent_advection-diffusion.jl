@@ -94,13 +94,13 @@ sol, clock, vars, params, grid = ADprob.sol, ADprob.clock, ADprob.vars, ADprob.p
 x, y = grid.x, grid.y
 
 # ## Saving output
-# The parent package `FourierFlows.jl` provides a way to save information from a simulation.
-# To do this we write a function `GetConcentration` and pass this to the `Output` function along 
+# The parent package `FourierFlows.jl` provides the functionality to save the output from our simulation.
+# To do this we write a function `get_concentration` and pass this to the `Output` function along 
 # with the `TracerAdvectionDiffusion.Problem` and the name of the output file.
 
-function GetConcentration(prob)
-    Concentration = @. prob.vars.c
-    return Concentration
+function get_concentration(prob)
+    ldiv!(prob.vars.c, prob.grid.rfftplan, deepcopy(prob.sol))
+    return prob.vars.c
 end
 output = Output(ADprob, "advection-diffusion.jld2", (:concentration, get_concentration))
 # This saves information that we will use for plotting later on
