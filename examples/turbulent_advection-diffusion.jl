@@ -149,14 +149,14 @@ cₗ = [abs.(conc_data["snapshots/concentration/"*string(i)][:, :, 2]) for i ∈
 x, y,  = conc_data["grid/x"], conc_data["grid/y"]
 Lx, Ly = conc_data["grid/Lx"], conc_data["grid/Ly"]
 plot_args = (xlabel = "x",
-            ylabel = "y",
-            aspectratio = 1,
-            framestyle = :box,
-            xlims = (-Lx/2, Lx/2),
-            ylims = (-Ly/2, Ly/2),
-            colorbar = true,
-            colorbar_title = " \nConcentration",
-            color = :deep)
+             ylabel = "y",
+             aspectratio = 1,
+             framestyle = :box,
+             xlims = (-Lx/2, Lx/2),
+             ylims = (-Ly/2, Ly/2),
+             colorbar = true,
+             colorbar_title = " \nConcentration",
+             color = :deep)
 
 p = heatmap(x, y, Cₗ[1]', title = "Concentration, t = $(t[1])"; plot_args...)
 conc_anim = @animate for i ∈ 2:length(t)
