@@ -11,6 +11,8 @@ using
 
 @reexport using FourierFlows, GeophysicalFlows.MultiLayerQG
 
+using GeophysicalFlows.MultiLayerQG: SingleLayerParams, TwoLayerParams
+
 import LinearAlgebra: mul!, ldiv!
 import GeophysicalFlows.MultiLayerQG
 
@@ -60,8 +62,8 @@ function Problem(dev, MQGprob::FourierFlows.Problem;
    tracer_release = 0.0
   )
   
-  nlayers = typeof(MQGprob.params) <: MultiLayerQG.SingleLayerParams ? 1 : 
-            typeof(MQGprob.params) <: MultiLayerQG.TwoLayerParams ? 2 : MQGprob.params.nlayers
+  nlayers = typeof(MQGprob.params) <: SingleLayerParams ? 1 : 
+            typeof(MQGprob.params) <: TwoLayerParams ? 2 : MQGprob.params.nlayers
 
   grid = MQGprob.grid
   if tracer_release != 0
