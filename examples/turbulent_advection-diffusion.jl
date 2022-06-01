@@ -75,7 +75,7 @@ nsteps = 4000               # total number of time-steps
 nsubs = 1                   # number of steps the simulation takes at each iteration 
 tracer_release = dt * 8000  # run flow for some time before releasing tracer
 
-ADprob = TracerAdvectionDiffusion.Problem(dev, MQGprob; κ = κ, stepper = stepper, tracer_release = tracer_release)
+ADprob = TracerAdvectionDiffusion.Problem(dev, MQGprob; κ, stepper, tracer_release)
 nothing
 
 # ## Initial condition for concentration in both layers
@@ -164,5 +164,6 @@ conc_anim = @animate for i ∈ 2:length(t)
     heatmap!(p, x, y, Cₗ[i]', title = "Concentration, t = $(t[i])"; plot_args...)
 
 end
+
 # Create a movie of the tracer
 mp4(conc_anim, "conc_adv-diff.mp4", fps = 12)

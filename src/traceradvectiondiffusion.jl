@@ -60,7 +60,9 @@ function Problem(dev, MQGprob::FourierFlows.Problem;
    tracer_release = 0.0
   )
   
-  nlayers = MQGprob.params.nlayers
+  nlayers = typeof(MQGprob.params) <: MultiLayerQG.SingleLayerParams ? 1 : 
+            typeof(MQGprob.params) <: MultiLayerQG.TwoLayerParams ? 2 : MQGprob.params.nlayers
+
   grid = MQGprob.grid
   if tracer_release != 0
     @info "Stepping the flow forward"
