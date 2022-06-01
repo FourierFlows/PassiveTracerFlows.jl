@@ -33,7 +33,7 @@ for dev in devices
     dt, tfinal  = 0.005, 0.1
     @test test_diffusion(stepper, dt, tfinal, dev; steadyflow=false)
     dt, tfinal  = 0.005, 0.1
-    @test test_diffusion(stepper, dt, tfinal, dev)
+    @test test_diffusion_multilayerqg(stepper, dt, tfinal, dev)
     dt, tfinal  = 0.005, 0.1
     @test test_hyperdiffusion(stepper, dt, tfinal, dev)
     

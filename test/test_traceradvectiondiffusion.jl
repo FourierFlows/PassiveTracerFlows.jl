@@ -110,7 +110,7 @@ function test_diffusion(stepper, dt, tfinal, dev::Device=CPU(); steadyflow = tru
   isapprox(cfinal, vs.c, rtol=gr.nx*gr.ny*nsteps*1e-12)
 end
 
-function test_diffusion(stepper, dt, tfinal, dev::Device=CPU())
+function test_diffusion_multilayerqg(stepper, dt, tfinal, dev::Device=CPU())
 
     # Set up MQGprob to generate zero flow and diffuse concentration field
 
@@ -130,8 +130,8 @@ function test_diffusion(stepper, dt, tfinal, dev::Device=CPU())
     U[2] = 0.0
 
     MQGprob = MultiLayerQG.Problem(nlayers, dev;
-                        nx=nx, Lx=Lx, f₀=f₀, g=g, H=H, ρ=ρ, U=U, μ=μ, β=β,
-                        dt=dt, stepper="FilteredRK4", aliased_fraction=0)
+                                   nx=nx, Lx=Lx, f₀=f₀, g=g, H=H, ρ=ρ, U=U, μ=μ, β=β,
+                                   dt=dt, stepper="FilteredRK4", aliased_fraction=0)
     grid = MQGprob.grid
     q₀  = zeros((grid.nx, grid.ny, nlayers))
     q₀h = MQGprob.timestepper.filter .* rfft(q₀, (1, 2)) # apply rfft  only in dims=1, 2
