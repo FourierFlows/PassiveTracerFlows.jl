@@ -102,7 +102,7 @@ function GetConcentration(prob)
     Concentration = @. prob.vars.c
     return Concentration
 end
-output = Output(ADprob, "advection-diffusion.jld2", (:Concentration, GetConcentration))
+output = Output(ADprob, "advection-diffusion.jld2", (:concentration, get_concentration))
 # This saves information that we will use for plotting later on
 saveproblem(output)
 
