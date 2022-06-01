@@ -99,7 +99,8 @@ x, y = grid.x, grid.y
 # with the `TracerAdvectionDiffusion.Problem` and the name of the output file.
 
 function get_concentration(prob)
-    ldiv!(prob.vars.c, prob.grid.rfftplan, deepcopy(prob.sol))
+    #ldiv!(prob.vars.c, prob.grid.rfftplan, deepcopy(prob.sol))
+    MultiLayerQG.invtransform!(prob.vars.c, deepcopy(prob.sol), prob.params.MQGprob.params)
     return prob.vars.c
 end
 output = Output(ADprob, "advection-diffusion.jld2", (:concentration, get_concentration))
