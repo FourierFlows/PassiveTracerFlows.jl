@@ -67,6 +67,8 @@ function Problem(dev, MQGprob::FourierFlows.Problem;
 
   grid = MQGprob.grid
   
+  tracer_release_time < 0 && throw(ArgumentError("tracer_release_time must be non-negative!"))
+
   if tracer_release_time > 0
     @info "Stepping the flow forward until `t = tracer_release_time`"
     step_until!(MQGprob, tracer_release_time)
