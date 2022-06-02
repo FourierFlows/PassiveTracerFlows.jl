@@ -66,13 +66,12 @@ function Problem(dev, MQGprob::FourierFlows.Problem;
             typeof(MQGprob.params) <: TwoLayerParams ? 2 : MQGprob.params.nlayers
 
   grid = MQGprob.grid
+  
   if tracer_release_time != 0
     @info "Stepping the flow forward"
-    while MQGprob.clock.t < tracer_release_time
-        MultiLayerQG.stepforward!(MQGprob)
-        MultiLayerQG.updatevars!(MQGprob)
-    end
+    step_until!(MQGprob, tracer_release_time)
   end
+
   params = TurbulentFlowParams(η, κ, nlayers, tracer_release, MQGprob)
   vars = Vars(dev, grid, nlayers)
   equation = Equation(params, grid)
