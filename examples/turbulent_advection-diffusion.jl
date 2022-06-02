@@ -71,11 +71,11 @@ nothing
 # We will let the flow run until it reaches a statistical equilibrium and then advect-diffuse the tracer.
 
 κ = 0.002
-nsteps = 4000               # total number of time-steps
-nsubs = 1                   # number of steps the simulation takes at each iteration 
-tracer_release = dt * 8000  # run flow for some time before releasing tracer
+nsteps = 4000                    # total number of time-steps
+nsubs = 1                        # number of steps the simulation takes at each iteration 
+tracer_release_time = dt * 8000  # run flow for some time before releasing tracer
 
-ADprob = TracerAdvectionDiffusion.Problem(dev, MQGprob; κ, stepper, tracer_release)
+ADprob = TracerAdvectionDiffusion.Problem(dev, MQGprob; κ, stepper, tracer_release_time)
 nothing
 
 # ## Initial condition for concentration in both layers
