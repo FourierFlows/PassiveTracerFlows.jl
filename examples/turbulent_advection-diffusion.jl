@@ -161,10 +161,9 @@ plot_args = (xlabel = "x",
              color = :deep)
 
 p = heatmap(x, y, cₗ[1]', title = "Concentration, t = " * @sprintf("%.2f", t[1]); plot_args...)
+
 conc_anim = @animate for i ∈ 2:length(t)
-
     heatmap!(p, x, y, cₗ[i]', title = "Concentration, t = $(t[i])"; plot_args...)
-
 end
 
 # Create a movie of the tracer
