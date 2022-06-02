@@ -140,9 +140,9 @@ function test_diffusion_multilayerqg(stepper, dt, tfinal, dev::Device=CPU())
     MultiLayerQG.set_q!(MQGprob, q₀)
     
     κ = 0.01
-    tracer_release = dt * 50
+    tracer_release_time = dt * 50
     nsteps = round(Int, tfinal/dt)
-    ADprob = TracerAdvectionDiffusion.Problem(dev, MQGprob; κ = κ, stepper = stepper, tracer_release = tracer_release)
+    ADprob = TracerAdvectionDiffusion.Problem(dev, MQGprob; κ = κ, stepper = stepper, tracer_release_time = tracer_release_time)
     sol, cl, vs, pr, gr = ADprob.sol, ADprob.clock, ADprob.vars, ADprob.params, ADprob.grid
     x, y = gridpoints(gr)
 
