@@ -22,9 +22,11 @@ nothing # hide
 
 # ## Setting up a `MultiLayerQG.Problem` to generate a turbulent flow
 #
-# The tubulent flow we will use to advect the passive tracer is generated using the 
-# [`MultiLayerQG`](https://fourierflows.github.io/GeophysicalFlowsDocumentation/stable/modules/multilayerqg/) module from the [`GeophysicalFlows.jl`](https://fourierflows.github.io/GeophysicalFlowsDocumentation/stable/) package. A more detailed setup  
-# of this two layer system can be found [here](https://fourierflows.github.io/GeophysicalFlowsDocumentation/stable/literated/multilayerqg_2layer/).
+# The tubulent flow we use to advect the passive tracer is generated using the 
+# [`MultiLayerQG`](https://fourierflows.github.io/GeophysicalFlowsDocumentation/stable/modules/multilayerqg/) module
+# from the [`GeophysicalFlows.jl`](https://fourierflows.github.io/GeophysicalFlowsDocumentation/stable/) package.
+# A more detailed setup of this two layer system is found at the
+# [GeophysicalFlows Documentation](https://fourierflows.github.io/GeophysicalFlowsDocumentation/stable/literated/multilayerqg_2layer/).
 #
 # ### Numerical and time stepping parameters for the flow
 
