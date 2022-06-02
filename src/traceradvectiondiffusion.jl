@@ -72,7 +72,7 @@ function Problem(dev, MQGprob::FourierFlows.Problem;
     step_until!(MQGprob, tracer_release_time)
   end
 
-  params = TurbulentFlowParams(η, κ, nlayers, tracer_release, MQGprob)
+  params = TurbulentFlowParams(η, κ, nlayers, tracer_release_time, MQGprob)
   vars = Vars(dev, grid, nlayers)
   equation = Equation(params, grid)
 
