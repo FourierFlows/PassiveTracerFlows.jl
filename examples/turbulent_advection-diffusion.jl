@@ -118,14 +118,14 @@ saveproblem(output)
 #
 # We specify that we would like to save the concentration every 50 timesteps using `save_frequency`
 # then step the problem forward.
-save_frequency = 50 # Freqeuncy at which output is saved
+save_frequency = 50 # Frequency at which output is saved
 
 startwalltime = time()
 while clock.step <= nsteps
   if clock.step % save_frequency == 0
     saveoutput(output)
-    log = @sprintf("Output saved, step: %04d, t: %d, walltime: %.2f min",
-                      clock.step, clock.t, (time()-startwalltime)/60)
+    log = @sprintf("Output saved, step: %04d, t: %.2f, walltime: %.2f min",
+                   clock.step, clock.t, (time()-startwalltime) / 60)
 
     println(log)
   end
@@ -170,9 +170,10 @@ plot_args = (xlabel = "x",
 
 p = heatmap(x, y, cₗ[1]', title = "Concentration, t = " * @sprintf("%.2f", t[1]); plot_args...)
 
+# Create a movie of the tracer
+
 conc_anim = @animate for i ∈ 1:length(t)
   heatmap!(p, x, y, cₗ[i]'; title = "Concentration, t " * @sprintf("%.2f", t[i]), plot_args...)
 end
 
-# Create a movie of the tracer
 mp4(conc_anim, "conc_adv-diff.mp4", fps = 12)
