@@ -165,16 +165,17 @@ plot_args = (xlabel = "x",
              xlims = (-Lx/2, Lx/2),
              ylims = (-Ly/2, Ly/2),
              colorbar = true,
-             colorrange = (0, amplitude/2),
+             clims = (0, amplitude/2),
              colorbar_title = "\n Concentration",
              color = :deep)
 
 p = heatmap(x, y, cₗ[1]', title = "Concentration, t = " * @sprintf("%.2f", t[1]); plot_args...)
+nothing # hide
 
 # Create a movie of the tracer
 
 conc_anim = @animate for i ∈ 1:length(t)
-  heatmap!(p, x, y, cₗ[i]'; title = "Concentration, t " * @sprintf("%.2f", t[i]), plot_args...)
+  heatmap!(p, x, y, cₗ[i]'; title = "Concentration, t = " * @sprintf("%.2f", t[i]), plot_args...)
 end
 
 mp4(conc_anim, "conc_adv-diff.mp4", fps = 12)
