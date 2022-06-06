@@ -151,6 +151,7 @@ conc_data = load("advection-diffusion.jld2")
 
 saved_data = 0:conc_data["save_frequency"]:conc_data["final_step"]
 t = [conc_data["snapshots/t/"*string(i)] for i ∈ saved_data]
+
 # Concentration time series in the lower layer
 cₗ = [abs.(conc_data["snapshots/concentration/"*string(i)][:, :, 2]) for i ∈ saved_data]
 
@@ -164,8 +165,8 @@ plot_args = (xlabel = "x",
              xlims = (-Lx/2, Lx/2),
              ylims = (-Ly/2, Ly/2),
              colorbar = true,
-             colorrange = (0, 5),
-             colorbar_title = " \nConcentration",
+             colorrange = (0, amplitude/2),
+             colorbar_title = "\n Concentration",
              color = :deep)
 
 p = heatmap(x, y, cₗ[1]', title = "Concentration, t = " * @sprintf("%.2f", t[1]); plot_args...)
