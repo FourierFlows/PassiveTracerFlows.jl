@@ -11,7 +11,7 @@ using
 
 @reexport using FourierFlows, GeophysicalFlows.MultiLayerQG
 
-using GeophysicalFlows.MultiLayerQG: SingleLayerParams, TwoLayerParams
+using GeophysicalFlows.MultiLayerQG: SingleLayerParams, TwoLayerParams, numberoflayers
 
 import LinearAlgebra: mul!, ldiv!
 import GeophysicalFlows.MultiLayerQG
@@ -264,16 +264,17 @@ function Vars(::Dev, grid::AbstractGrid{T}) where {Dev, T}
   return Vars(c, cx, cy, ch, cxh, cyh)
 end
 
-function Vars(::Dev, grid::AbstractGrid{T}, nlayers::Int) where {Dev, T}
+function Vars(dev::Dev, grid::AbstractGrid{T}, MQGprob::FourierFlows.Problem) where {Dev, T}
+  nlayers = numberoflayers(MQGprob.params)
+
   if nlayers == 1
-    @devzeros Dev T (grid.nx, grid.ny) c cx cy
-    @devzeros Dev Complex{T} (grid.nkr, grid.nl) ch cxh cyh
+    return Vars(dev, grid)
   else
     @devzeros Dev T (grid.nx, grid.ny, nlayers) c cx cy
     @devzeros Dev Complex{T} (grid.nkr, grid.nl, nlayers) ch cxh cyh
+    
+    return Vars(c, cx, cy, ch, cxh, cyh)
   end
-  
-  return Vars(c, cx, cy, ch, cxh, cyh)
 end
 
 
