@@ -352,7 +352,7 @@ function calcN_turbulentflow!(N, sol, t, clock, vars, params::AbstractTurbulentF
 """
     updatevars!(prob)
 
-Update the `vars` on the `grid` with the solution in `sol`.
+Update the `prob.vars` in problem `prob` using the solution `prob.sol`.
 """
 function updatevars!(prob)
   vars, grid, sol = prob.vars, prob.grid, prob.sol
