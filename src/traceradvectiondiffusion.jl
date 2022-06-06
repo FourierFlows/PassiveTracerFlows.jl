@@ -75,7 +75,7 @@ function Problem(dev, MQGprob::FourierFlows.Problem;
   end
 
   params = TurbulentFlowParams(η, κ, nlayers, tracer_release_time, MQGprob)
-  vars = Vars(dev, grid, nlayers)
+  vars = Vars(dev, grid, MQGprob)
   equation = Equation(params, grid)
 
   dt = MQGprob.clock.dt
@@ -87,7 +87,6 @@ end
 # Params
 # --
 
-abstract type AbstractTracerParams <: AbstractParams end
 abstract type AbstractConstDiffParams <: AbstractParams end
 abstract type AbstractSteadyFlowParams <: AbstractParams end
 abstract type AbstractTurbulentFlowParams <: AbstractParams end
@@ -332,7 +331,7 @@ function calcN_turbulentflow!(N, sol, t, clock, vars, params::AbstractTurbulentF
   
     MultiLayerQG.invtransform!(vars.cx, vars.cxh, params.MQGprob.params)
     MultiLayerQG.invtransform!(vars.cy, vars.cyh, params.MQGprob.params)
-  
+
     u = @. params.MQGprob.vars.u + params.MQGprob.params.U
     v = params.MQGprob.vars.v
 
@@ -342,7 +341,7 @@ function calcN_turbulentflow!(N, sol, t, clock, vars, params::AbstractTurbulentF
 
     @. vars.cx = - u * vars.cx - v * vars.cy # copies over vars.cx so vars.cx = N in physical space
     MultiLayerQG.fwdtransform!(N, vars.cx, params.MQGprob.params)
-    
+
     return nothing
   end
 
@@ -355,9 +354,7 @@ function calcN_turbulentflow!(N, sol, t, clock, vars, params::AbstractTurbulentF
 
 Update the `prob.vars` in problem `prob` using the solution `prob.sol`.
 """
-function updatevars!(prob)
-  vars, grid, sol = prob.vars, prob.grid, prob.sol
-  
+function updatevars!(params, vars, grid, sol)
   @. vars.ch = sol
   
   ldiv!(vars.c, grid.rfftplan, deepcopy(vars.ch))
@@ -366,61 +363,50 @@ function updatevars!(prob)
 end
 
 """
-    MQGupdatevars!(prob)
+    updatevars!(params::AbstractTurbulentFlowParams, vars, grid, sol)
 
 Update the `vars`` on the `grid` with the solution in `sol` for a problem `prob`
 that is being advected by a turbulent flow.     
 """
-function MQGupdatevars!(prob)
-  vars, grid, sol = prob.vars, prob.grid, prob.sol
-  
+function updatevars!(params::AbstractTurbulentFlowParams, vars, grid, sol)  
   @. vars.ch = sol
   
-  MultiLayerQG.invtransform!(vars.c, deepcopy(vars.ch), prob.params.MQGprob.params)
+  MultiLayerQG.invtransform!(vars.c, deepcopy(vars.ch), params.MQGprob.params)
 
   return nothing
 end
 
-"""
-    set_c!(prob, c)
+updatevars!(prob) = updatevars!(prob.params, prob.vars, prob.grid, prob.sol)
 
-Set the solution sol as the transform of c and update variables v
-on the grid g.
 """
-function set_c!(prob, c)
-  sol, vars, grid = prob.sol, prob.vars, prob.grid
+    set_c!(sol, params::Union{AbstractConstDiffParams, AbstractSteadyFlowParams}, grid, c)
 
+Set the solution `sol` as the transform of `c` and update variables `vars`.
+"""
+function set_c!(sol, params::Union{AbstractConstDiffParams, AbstractSteadyFlowParams}, vars, grid, c)
   mul!(sol, grid.rfftplan, c)
   
-  updatevars!(prob)
+  updatevars!(params, vars, grid, sol)
   
   return nothing
 end
 
 """
-    function set_c!(prob, c, nlayers)
+    set_c!(sol, params::AbstractTurbulentFlowParams, grid, c)
 
 Set the initial condition for tracer concentration in all layers of a
 `TracerAdvectionDiffusion.Problem` that uses a `MultiLayerQG` flow to 
 advect the tracer.
 """
-function set_c!(prob, c, nlayers)
-  sol, vars, grid = prob.sol, prob.vars, prob.grid
-
-  C = Array{Float64}(undef, grid.nx, grid.ny, nlayers)
-
-  if size(c) == size(C)
-    @. C = c
-  else
-    for n in 1:nlayers
-        C[:, :, n] = c
-    end
-  end
+function set_c!(sol, params::AbstractTurbulentFlowParams, vars, grid::AbstractGrid{T}, c) where T
+  nlayers = numberoflayers(params.MQGprob.params)
   
-  MultiLayerQG.fwdtransform!(sol, C, prob.params.MQGprob.params)
-  MQGupdatevars!(prob)
+  MultiLayerQG.fwdtransform!(sol, repeat(c, 1, 1, nlayers), params.MQGprob.params)
+  updatevars!(params, vars, grid, sol)
 
   return nothing
 end
+
+set_c!(prob, c) = set_c!(prob.sol, prob.params, prob.vars, prob.grid, c)
 
 end # module

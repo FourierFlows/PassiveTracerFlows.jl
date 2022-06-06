@@ -153,10 +153,10 @@ function test_diffusion_multilayerqg(stepper, dt, tfinal, dev::Device=CPU())
     σt = sqrt(2*κ*tfinal + σ^2)
     cfinal = @. c0ampl*(σ^2/σt^2)*exp(-(x^2+y^2)/(2*σt^2))
 
-    TracerAdvectionDiffusion.set_c!(ADprob, c0, nlayers)
+    TracerAdvectionDiffusion.set_c!(ADprob, c0)
 
     stepforward!(ADprob, nsteps)
-    TracerAdvectionDiffusion.MQGupdatevars!(ADprob)
+    TracerAdvectionDiffusion.updatevars!(ADprob)
 
     # Compare to analytic solution
     isapprox(cfinal, vs.c[:, :, 1], rtol=gr.nx*gr.ny*nsteps*1e-12)
