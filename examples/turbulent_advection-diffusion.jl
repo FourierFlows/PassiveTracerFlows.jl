@@ -65,6 +65,7 @@ MultiLayerQG.set_q!(MQGprob, q₀)
 nothing 
 
 # ## Tracer advection-diffusion setup
+#
 # Now that we have a `MultiLayerQG.Problem` setup to generate our turbulent flow, we
 # setup an advection-diffusion simulation. This is done by passing the `MultiLayerQG.Problem`
 # as an argument to `TracerAdvectionDiffusion.Problem` which sets up an advection-diffusion problem
@@ -81,61 +82,66 @@ ADprob = TracerAdvectionDiffusion.Problem(dev, MQGprob; κ, stepper, tracer_rele
 nothing
 
 # ## Initial condition for concentration in both layers
+#
 # We have a two layer system so we will advect-diffuse the tracer in both layers.
-# To do this we set the initial condition for tracer concetration as a Gaussian centred at the origin.
+# To do this we set the initial condition for tracer concetration as a Gaussian centered at the origin.
 # Then we create some shortcuts for the `TracerAdvectionDiffusion.Problem`.
 gaussian(x, y, σ) = exp(-(x^2 + y^2) / (2σ^2))
 
 amplitude, spread = 10, 0.15
-c₀ = [amplitude * gaussian(x[i], y[j], spread) for i=1:grid.nx, j=1:grid.ny]
+c₀ = [amplitude * gaussian(x[i], y[j], spread) for j=1:grid.ny, i=1:grid.nx]
 
-TracerAdvectionDiffusion.set_c!(ADprob, c₀, nlayers)
+TracerAdvectionDiffusion.set_c!(ADprob, c₀)
 
 # Shortcuts for advection-diffusion problem
 sol, clock, vars, params, grid = ADprob.sol, ADprob.clock, ADprob.vars, ADprob.params, ADprob.grid
 x, y = grid.x, grid.y
 
 # ## Saving output
+#
 # The parent package `FourierFlows.jl` provides the functionality to save the output from our simulation.
 # To do this we write a function `get_concentration` and pass this to the `Output` function along 
 # with the `TracerAdvectionDiffusion.Problem` and the name of the output file.
 
 function get_concentration(prob)
-    MultiLayerQG.invtransform!(prob.vars.c, deepcopy(prob.sol), prob.params.MQGprob.params)
-    return prob.vars.c
+  MultiLayerQG.invtransform!(prob.vars.c, deepcopy(prob.sol), prob.params.MQGprob.params)
+
+  return prob.vars.c
 end
+
 output = Output(ADprob, "advection-diffusion.jld2", (:concentration, get_concentration))
+
 # This saves information that we will use for plotting later on
 saveproblem(output)
 
 # ## Step the problem forward and save the output
+#
 # We specify that we would like to save the concentration every 50 timesteps using `save_frequency`
 # then step the problem forward.
 save_frequency = 50 # Freqeuncy at which output is saved
 
 startwalltime = time()
 while clock.step <= nsteps
-
-    if clock.step % save_frequency == 0
-
-       saveoutput(output)
-       log = @sprintf("Output saved, step: %04d, t: %d, walltime: %.2f min",
+  if clock.step % save_frequency == 0
+    saveoutput(output)
+    log = @sprintf("Output saved, step: %04d, t: %d, walltime: %.2f min",
                       clock.step, clock.t, (time()-startwalltime)/60)
-   
-       println(log)
-     end
-   
-     stepforward!(ADprob)
-     TracerAdvectionDiffusion.MQGupdatevars!(ADprob)
+
+    println(log)
+  end
+
+  stepforward!(ADprob)
+  TracerAdvectionDiffusion.updatevars!(ADprob)
 end
 
 # Append this information to our saved data for plotting later on
 jldopen(output.path, "a+") do path
-    path["save_frequency"] = save_frequency
-    path["final_step"] = ADprob.clock.step - 1
+  path["save_frequency"] = save_frequency
+  path["final_step"] = ADprob.clock.step - 1
 end
 
 # ## Visualising the output
+#
 # We now have output from our simulation saved in `advection-diffusion.jld2`.
 # From this we can create a time series for the tracer that has been advected-diffused
 # in the lower layer of our turbulent flow (the simulation from the upper layer can be obtained in a similar manner).
@@ -148,8 +154,9 @@ t = [conc_data["snapshots/t/"*string(i)] for i ∈ saved_data]
 # Concentration time series in the lower layer
 cₗ = [abs.(conc_data["snapshots/concentration/"*string(i)][:, :, 2]) for i ∈ saved_data]
 
-x, y,  = conc_data["grid/x"], conc_data["grid/y"]
+x,  y  = conc_data["grid/x"],  conc_data["grid/y"]
 Lx, Ly = conc_data["grid/Lx"], conc_data["grid/Ly"]
+
 plot_args = (xlabel = "x",
              ylabel = "y",
              aspectratio = 1,
@@ -157,13 +164,14 @@ plot_args = (xlabel = "x",
              xlims = (-Lx/2, Lx/2),
              ylims = (-Ly/2, Ly/2),
              colorbar = true,
+             colorrange = (0, 5),
              colorbar_title = " \nConcentration",
              color = :deep)
 
 p = heatmap(x, y, cₗ[1]', title = "Concentration, t = " * @sprintf("%.2f", t[1]); plot_args...)
 
-conc_anim = @animate for i ∈ 2:length(t)
-    heatmap!(p, x, y, cₗ[i]', title = "Concentration, t = $(t[i])"; plot_args...)
+conc_anim = @animate for i ∈ 1:length(t)
+  heatmap!(p, x, y, cₗ[i]'; title = "Concentration, t " * @sprintf("%.2f", t[i]), plot_args...)
 end
 
 # Create a movie of the tracer
