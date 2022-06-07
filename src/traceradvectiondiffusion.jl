@@ -45,7 +45,7 @@ function Problem(dev;
   grid = TwoDGrid(dev, nx, Lx, ny, Ly; T=T)
   params = steadyflow==true ? ConstDiffSteadyFlowParams(η, κ, u, v, grid) : ConstDiffParams(η, κ, u, v)
   vars = Vars(dev, grid)
-  equation = Equation(params, grid)
+  equation = Equation(dev, params, grid)
 
   return FourierFlows.Problem(equation, stepper, dt, grid, vars, params, dev)
 end
@@ -202,24 +202,26 @@ end
 # --
 
 """
-    Equation(params, grid)
+    Equation(dev, params, grid)
 
-Return the equation for constant diffusivity problem with params p and grid g.
+Return the equation for constant diffusivity problem with `params` and `grid` on device `dev`.
 """
-function Equation(params::ConstDiffParams, grid)
-  L = @. - params.η * grid.kr^2 - params.κ * grid.l^2 - params.κh * grid.Krsq^params.nκh
+function Equation(dev::Dev, params::ConstDiffParams, grid)
+  L = zeros(dev, eltype(grid), (grid.nkr, grid.nl))
+  @. L = - params.η * grid.kr^2 - params.κ * grid.l^2 - params.κh * grid.Krsq^params.nκh
   
   return FourierFlows.Equation(L, calcN!, grid)
 end
 
-function Equation(params::ConstDiffSteadyFlowParams, grid)
-  L = @. - params.η * grid.kr^2 - params.κ * grid.l^2 - params.κh * grid.Krsq^params.nκh
+function Equation(dev::Dev, params::ConstDiffSteadyFlowParams, grid)
+  L = zeros(dev, eltype(grid), (grid.nkr, grid.nl))
+  @. L = - params.η * grid.kr^2 - params.κ * grid.l^2 - params.κh * grid.Krsq^params.nκh
   
   return FourierFlows.Equation(L, calcN_steadyflow!, grid)
 end
 
-function Equation(params::TurbulentFlowParams, grid)
-  L = zeros(dev, eltype(grid), (grid.nx, grid.ny, numberoflayers(params)))
+function Equation(dev::Dev, params::TurbulentFlowParams, grid)
+  L = zeros(dev, eltype(grid), (grid.nkr, grid.nl, numberoflayers(params)))
 
   for j in 1:params.nlayers
       @. L[:, :, j] = - params.η * grid.kr^2 - params.κ * grid.l^2 - params.κh * grid.Krsq^params.nκh
