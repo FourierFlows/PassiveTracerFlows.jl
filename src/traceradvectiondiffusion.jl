@@ -292,8 +292,6 @@ end
 Calculate the advective terms for a tracer equation with constant diffusivity and time-varying flow.
 """
 function calcN!(N, sol, t, clock, vars, params::AbstractConstDiffParams, grid)
-  dealias!(sol, grid)
-
   @. vars.cxh = im * grid.kr * sol
   @. vars.cyh = im * grid.l  * sol
 
@@ -314,8 +312,6 @@ end
 Calculate the advective terms for a tracer equation with constant diffusivity and time-constant flow.
 """
 function calcN_steadyflow!(N, sol, t, clock, vars, params::AbstractSteadyFlowParams, grid)
-  dealias!(sol, grid)
-  
   @. vars.cxh = im * grid.kr * sol
   @. vars.cyh = im * grid.l  * sol
 
@@ -334,8 +330,6 @@ end
 Calculate the advective terms for a tracer equation with constant diffusivity and turbulent `MultiLayerQG` flow.
 """
 function calcN_turbulentflow!(N, sol, t, clock, vars, params::AbstractTurbulentFlowParams, grid)
-  dealias!(sol, grid)
-  
   @. vars.cxh = im * grid.kr * sol
   @. vars.cyh = im * grid.l  * sol
 
