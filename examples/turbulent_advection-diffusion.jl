@@ -109,7 +109,14 @@ function get_concentration(prob)
   return prob.vars.c
 end
 
-output = Output(ADprob, "advection-diffusion.jld2", (:concentration, get_concentration))
+function get_streamfunction(prob)
+  MultiLayerQG.updatevars!(params.MQGprob)
+
+  return params.MQGprob.vars.ψ
+end
+
+output = Output(ADprob, "advection-diffusion.jld2",
+                (:concentration, get_concentration), (:streamfunction, get_streamfunction))
 
 # This saves information that we will use for plotting later on
 saveproblem(output)
@@ -118,7 +125,7 @@ saveproblem(output)
 #
 # We specify that we would like to save the concentration every 50 timesteps using `save_frequency`
 # then step the problem forward.
-save_frequency = 50 # Frequency at which output is saved
+save_frequency = 25 # Frequency at which output is saved
 
 startwalltime = time()
 while clock.step <= nsteps
@@ -131,7 +138,6 @@ while clock.step <= nsteps
   end
 
   stepforward!(ADprob)
-  TracerAdvectionDiffusion.updatevars!(ADprob)
 end
 
 # Append this information to our saved data for plotting later on
@@ -147,16 +153,22 @@ end
 # in the lower layer of our turbulent flow (the simulation from the upper layer can be obtained in a similar manner).
 
 # Create time series for the concentration in the upper layer
-conc_data = load("advection-diffusion.jld2")
+file = jldopen(output.path)
 
-saved_data = 0:conc_data["save_frequency"]:conc_data["final_step"]
-t = [conc_data["snapshots/t/"*string(i)] for i ∈ saved_data]
+iterations = parse.(Int, keys(file["snapshots/t"]))
+t = [file["snapshots/t/$i"] for i ∈ iterations]
 
-# Concentration time series in the lower layer
-cₗ = [abs.(conc_data["snapshots/concentration/"*string(i)][:, :, 2]) for i ∈ saved_data]
+# Concentration and streamfunction time series in the lower layer
+cₗ = [file["snapshots/concentration/$i"][:, :, 2] for i ∈ iterations]
+ψₗ = [file["snapshots/streamfunction/$i"][:, :, 2] for i ∈ iterations]
 
-x,  y  = conc_data["grid/x"],  conc_data["grid/y"]
-Lx, Ly = conc_data["grid/Lx"], conc_data["grid/Ly"]
+# We normalize all streamfunctions to have maximum absolute value `amplitude/5`.
+for i in 1:length(ψₗ)
+  ψₗ[i] = amplitude/5 * ψₗ[i] / maximum(abs, ψₗ[i])
+end
+
+x,  y  = file["grid/x"],  file["grid/y"]
+Lx, Ly = file["grid/Lx"], file["grid/Ly"]
 
 plot_args = (xlabel = "x",
              ylabel = "y",
@@ -164,18 +176,26 @@ plot_args = (xlabel = "x",
              framestyle = :box,
              xlims = (-Lx/2, Lx/2),
              ylims = (-Ly/2, Ly/2),
-             colorbar = true,
-             clims = (0, amplitude/2),
-             colorbar_title = "\n Concentration",
-             color = :deep)
+             legend = :false,
+             clims = (-amplitude/5, amplitude/5),
+             colorbar_title = "\n concentration",
+             color = :balance)
 
-p = heatmap(x, y, cₗ[1]', title = "Concentration, t = " * @sprintf("%.2f", t[1]); plot_args...)
+p = heatmap(x, y, cₗ[1]', title = "concentration, t = " * @sprintf("%.2f", t[1]); plot_args...)
+
+contour!(p, x, y, Array(ψₗ[1]'), lw=2, c=:black, ls=:solid, alpha=0.7)
+
 nothing # hide
 
 # Create a movie of the tracer
 
-conc_anim = @animate for i ∈ 1:length(t)
-  heatmap!(p, x, y, cₗ[i]'; title = "Concentration, t = " * @sprintf("%.2f", t[i]), plot_args...)
+anim = @animate for i ∈ 1:length(t)
+  println(i)
+  # heatmap!(p, x, y, cₗ[i]'; title = "Concentration, t = " * @sprintf("%.2f", t[i]), plot_args...)
+  # contour!(p, x, y, Array(ψₗ[i]'))
+  p[1][1][:z] = Array(cₗ[i])
+  p[1][:title] = "concentration, t = " * @sprintf("%.2f", t[i])
+  p[1][2][:z] = Array(ψₗ[i])
 end
 
-mp4(conc_anim, "conc_adv-diff.mp4", fps = 12)
+mp4(anim, "turbulentflow_advection-diffusion.mp4", fps = 12)
