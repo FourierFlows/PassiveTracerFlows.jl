@@ -12,7 +12,7 @@ function test_constvel(stepper, dt, nsteps, dev::Device=CPU())
   u(x, y) = uvel
   v(x, y) = vvel
 
-  prob = TracerAdvectionDiffusion.Problem(dev; nx=nx, Lx=Lx, κ=0.0, u=u, v=v, dt=dt, stepper=stepper, steadyflow=true)
+  prob = TracerAdvectionDiffusion.Problem(dev; nx, Lx, κ=0.0, u, v, dt, stepper, steadyflow=true)
   sol, cl, vs, pr, gr = prob.sol, prob.clock, prob.vars, prob.params, prob.grid
 
   x, y = gridpoints(gr)
@@ -53,7 +53,7 @@ function test_timedependentvel(stepper, dt, tfinal, dev::Device=CPU(); uvel=0.5,
   u(x, y, t) = uvel
   v(x, y, t) = αv*t + αv*dt/2
 
-  prob = TracerAdvectionDiffusion.Problem(dev; nx=nx, Lx=Lx, κ=0.0, u=u, v=v, dt=dt, stepper=stepper)
+  prob = TracerAdvectionDiffusion.Problem(dev; nx, Lx, κ=0.0, u, v, dt, stepper)
   sol, cl, vs, pr, gr = prob.sol, prob.clock, prob.vars, prob.params, prob.grid
   x, y = gridpoints(gr)
 
@@ -90,8 +90,7 @@ function test_diffusion(stepper, dt, tfinal, dev::Device=CPU(); steadyflow = tru
     error("tfinal is not multiple of dt")
   end
 
-  prob = TracerAdvectionDiffusion.Problem(dev; steadyflow=steadyflow, nx=nx,
-    Lx=Lx, κ=κ, dt=dt, stepper=stepper)
+  prob = TracerAdvectionDiffusion.Problem(dev; steadyflow, nx, Lx, κ, dt, stepper)
   sol, cl, vs, pr, gr = prob.sol, prob.clock, prob.vars, prob.params, prob.grid
   x, y = gridpoints(gr)
 
@@ -99,7 +98,7 @@ function test_diffusion(stepper, dt, tfinal, dev::Device=CPU(); steadyflow = tru
   c0func(x, y) = c0ampl * exp(-(x^2 + y^2) / (2σ^2))
 
   c0 = @. c0func(x, y)
-  tfinal = nsteps*dt
+  tfinal = nsteps * dt
   σt = sqrt(2κ * tfinal + σ^2)
   cfinal = @. c0ampl*(σ^2 / σt^2)*exp(-(x^2 + y^2) / (2σt^2))
 
@@ -130,10 +129,10 @@ function test_diffusion_multilayerqg(stepper, dt, tfinal, dev::Device=CPU())
   U[2] = 0.0
 
   MQGprob = MultiLayerQG.Problem(nlayers, dev;
-                                 nx=nx, Lx=Lx, f₀=f₀, g=g, H=H, ρ=ρ, U=U, μ=μ, β=β,
-                                 dt=dt, stepper="FilteredRK4", aliased_fraction=0)
+                                 nx, Lx, f₀, g, H, ρ, U, μ, β, dt,
+                                 stepper="FilteredRK4", aliased_fraction=0)
   grid = MQGprob.grid
-  q₀ = zeros(dev, T, (grid.nx, grid.ny, nlayers))
+  q₀ = zeros(dev, eltype(grid), (grid.nx, grid.ny, nlayers))
   
   MultiLayerQG.set_q!(MQGprob, q₀)
   
@@ -199,12 +198,12 @@ function test_hyperdiffusion(stepper, dt, tfinal, dev::Device=CPU(); steadyflow 
   prob = FourierFlows.Problem(eq, stepper, dt, gr, vs, pr, dev)
 
   c0ampl, σ = 0.1, 0.1
-  c0func(x, y) = c0ampl*exp(-(x^2+y^2)/(2σ^2))
+  c0func(x, y) = c0ampl * exp(-(x^2 + y^2) / (2σ^2))
 
   c0 = @. c0func(x, y)
-  tfinal = nsteps*dt
-  σt = sqrt(2*κh*tfinal + σ^2)
-  cfinal = @. c0ampl*σ^2/σt^2 * exp(-(x^2+y^2)/(2*σt^2))
+  tfinal = nsteps * dt
+  σt = sqrt(2κh * tfinal + σ^2)
+  cfinal = @. c0ampl * σ^2 / σt^2 * exp(-(x^2 + y^2) / (2σt^2))
 
   TracerAdvectionDiffusion.set_c!(prob, c0)
 
