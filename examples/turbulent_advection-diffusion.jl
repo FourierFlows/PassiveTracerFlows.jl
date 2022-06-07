@@ -74,7 +74,7 @@ nothing
 # We will let the flow run up to `t = tracer_release_time` and then release the tracer and let it
 # evolve with the flow.
 
-κ = 0.005                        # Constant diffusivity
+κ = 0.002                        # Constant diffusivity
 nsteps = 4000                    # total number of time-steps
 tracer_release_time = 25.0       # run flow for some time before releasing tracer
 
@@ -103,15 +103,21 @@ x, y = grid.x, grid.y
 # with the `TracerAdvectionDiffusion.Problem` and the name of the output file.
 
 function get_concentration(prob)
-  MultiLayerQG.invtransform!(prob.vars.c, deepcopy(prob.sol), prob.params.MQGprob.params)
+  invtransform!(prob.vars.c, deepcopy(prob.sol), prob.params.MQGprob.params)
 
   return prob.vars.c
 end
 
 function get_streamfunction(prob)
-  MultiLayerQG.updatevars!(params.MQGprob)
+  params, vars, grid = prob.params.MQGprob.params, prob.params.MQGprob.vars, prob.grid
 
-  return params.MQGprob.vars.ψ
+  @. vars.qh = prob.params.MQGprob.sol
+
+  streamfunctionfrompv!(vars.ψh, vars.qh, params, grid)
+
+  invtransform!(vars.ψ, vars.ψh, params)
+
+  return vars.ψ
 end
 
 output = Output(ADprob, "advection-diffusion.jld2",
@@ -122,8 +128,8 @@ saveproblem(output)
 
 # ## Step the problem forward and save the output
 #
-# We specify that we would like to save the concentration every 20 timesteps using `save_frequency`
-# then step the problem forward.
+# We specify that we would like to save the concentration every `save_frequency` timesteps;
+# then we step the problem forward.
 
 save_frequency = 50 # Frequency at which output is saved
 
@@ -139,6 +145,7 @@ while clock.step <= nsteps
 
   stepforward!(ADprob)
   stepforward!(params.MQGprob)
+  MultiLayerQG.updatevars!(params.MQGprob)
 end
 
 # ## Visualising the output
@@ -179,17 +186,16 @@ plot_args = (xlabel = "x",
              color = :balance)
 
 p = heatmap(x, y, Array(c[1]'), title = "concentration, t = " * @sprintf("%.2f", t[1]); plot_args...)
-
-contour!(p, x, y, Array(ψ[1]'), levels = 0.15:0.3:1.5, lw=2, c=:black, ls=:solid, alpha=0.5)
-contour!(p, x, y, Array(ψ[1]'), levels = -0.15:-0.3:-1.5, lw=2, c=:black, ls=:dash, alpha=0.5)
+contour!(p, x, y, Array(ψ[1]'), levels = 0.15:0.3:1.5, lw=2, c=:grey, ls=:solid, alpha=0.5)
+contour!(p, x, y, Array(ψ[1]'), levels = -0.15:-0.3:-1.5, lw=2, c=:grey, ls=:dash, alpha=0.5)
 
 nothing # hide
 
 # Create a movie of the tracer
 
 anim = @animate for i ∈ 1:length(t)
-  p[1][1][:z] = Array(c[i])
   p[1][:title] = "concentration, t = " * @sprintf("%.2f", t[i])
+  p[1][1][:z] = Array(c[i])
   p[1][2][:z] = Array(ψ[i])
   p[1][3][:z] = Array(ψ[i])
 end
