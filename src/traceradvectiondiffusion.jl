@@ -207,22 +207,22 @@ end
 Return the equation for constant diffusivity problem with params p and grid g.
 """
 function Equation(params::ConstDiffParams, grid)
-  L = @. -params.η * grid.kr^2 - params.κ * grid.l^2 - params.κh * grid.Krsq^params.nκh
+  L = @. - params.η * grid.kr^2 - params.κ * grid.l^2 - params.κh * grid.Krsq^params.nκh
   
   return FourierFlows.Equation(L, calcN!, grid)
 end
 
 function Equation(params::ConstDiffSteadyFlowParams, grid)
-  L = @. -params.η * grid.kr^2 - params.κ * grid.l^2 - params.κh * grid.Krsq^params.nκh
+  L = @. - params.η * grid.kr^2 - params.κ * grid.l^2 - params.κh * grid.Krsq^params.nκh
   
   return FourierFlows.Equation(L, calcN_steadyflow!, grid)
 end
 
 function Equation(params::TurbulentFlowParams, grid)
-  L = zeros(grid.nkr, grid.nl, params.nlayers)
+  L = zeros(dev, eltype(grid), (grid.nx, grid.ny, numberoflayers(params)))
 
   for j in 1:params.nlayers
-      @. L[:, :, j] = -params.η * grid.kr^2 - params.κ * grid.l^2 - params.κh * grid.Krsq^params.nκh
+      @. L[:, :, j] = - params.η * grid.kr^2 - params.κ * grid.l^2 - params.κh * grid.Krsq^params.nκh
   end
 
   return FourierFlows.Equation(L, calcN_turbulentflow!, grid)
