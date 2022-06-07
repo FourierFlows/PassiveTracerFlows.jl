@@ -30,7 +30,7 @@ function test_constvel(stepper, dt, nsteps, dev::Device=CPU())
   stepforward!(prob, nsteps)
   TracerAdvectionDiffusion.updatevars!(prob)
 
-  isapprox(cfinal, vs.c, rtol=gr.nx*gr.ny*nsteps*1e-12)
+  return isapprox(cfinal, vs.c, rtol=gr.nx*gr.ny*nsteps*1e-12)
 end
 
 
@@ -68,7 +68,8 @@ function test_timedependentvel(stepper, dt, tfinal, dev::Device=CPU(); uvel=0.5,
 
   stepforward!(prob, nsteps)
   TracerAdvectionDiffusion.updatevars!(prob)
-  isapprox(cfinal, vs.c, rtol=gr.nx*gr.ny*nsteps*1e-12)
+
+  return isapprox(cfinal, vs.c, rtol=gr.nx*gr.ny*nsteps*1e-12)
 end
 
 
@@ -107,60 +108,58 @@ function test_diffusion(stepper, dt, tfinal, dev::Device=CPU(); steadyflow = tru
   stepforward!(prob, nsteps)
   TracerAdvectionDiffusion.updatevars!(prob)
 
-  isapprox(cfinal, vs.c, rtol=gr.nx*gr.ny*nsteps*1e-12)
+  return isapprox(cfinal, vs.c, rtol=gr.nx*gr.ny*nsteps*1e-12)
 end
 
 function test_diffusion_multilayerqg(stepper, dt, tfinal, dev::Device=CPU())
+  # Set up MQGprob to generate zero flow and diffuse concentration field
 
-    # Set up MQGprob to generate zero flow and diffuse concentration field
+  nx = 128
+  Lx = 2π
 
-    nx = 128
-    Lx = 2π
+  μ = 0                 
+  β = 0                    
 
-    μ = 0                 
-    β = 0                    
+  nlayers = 2              
+  f₀, g = 1, 1             
+  H = [0.2, 0.8]          
+  ρ = [4.0, 5.0]          
 
-    nlayers = 2              
-    f₀, g = 1, 1             
-    H = [0.2, 0.8]          
-    ρ = [4.0, 5.0]          
+  U = zeros(nlayers) 
+  U[1] = 1.0
+  U[2] = 0.0
 
-    U = zeros(nlayers) 
-    U[1] = 1.0
-    U[2] = 0.0
+  MQGprob = MultiLayerQG.Problem(nlayers, dev;
+                                  nx=nx, Lx=Lx, f₀=f₀, g=g, H=H, ρ=ρ, U=U, μ=μ, β=β,
+                                  dt=dt, stepper="FilteredRK4", aliased_fraction=0)
+  grid = MQGprob.grid
+  q₀  = zeros((grid.nx, grid.ny, nlayers))
+  q₀h = MQGprob.timestepper.filter .* rfft(q₀, (1, 2)) # apply rfft  only in dims=1, 2
+  q₀  = irfft(q₀h, grid.nx, (1, 2))                 # apply irfft only in dims=1, 2
+  
+  MultiLayerQG.set_q!(MQGprob, q₀)
+  
+  κ = 0.01
+  tracer_release_time = dt * 50
+  nsteps = round(Int, tfinal/dt)
+  ADprob = TracerAdvectionDiffusion.Problem(dev, MQGprob; κ = κ, stepper = stepper, tracer_release_time = tracer_release_time)
+  sol, cl, vs, pr, gr = ADprob.sol, ADprob.clock, ADprob.vars, ADprob.params, ADprob.grid
+  x, y = gridpoints(gr)
 
-    MQGprob = MultiLayerQG.Problem(nlayers, dev;
-                                   nx=nx, Lx=Lx, f₀=f₀, g=g, H=H, ρ=ρ, U=U, μ=μ, β=β,
-                                   dt=dt, stepper="FilteredRK4", aliased_fraction=0)
-    grid = MQGprob.grid
-    q₀  = zeros((grid.nx, grid.ny, nlayers))
-    q₀h = MQGprob.timestepper.filter .* rfft(q₀, (1, 2)) # apply rfft  only in dims=1, 2
-    q₀  = irfft(q₀h, grid.nx, (1, 2))                 # apply irfft only in dims=1, 2
-    
-    MultiLayerQG.set_q!(MQGprob, q₀)
-    
-    κ = 0.01
-    tracer_release_time = dt * 50
-    nsteps = round(Int, tfinal/dt)
-    ADprob = TracerAdvectionDiffusion.Problem(dev, MQGprob; κ = κ, stepper = stepper, tracer_release_time = tracer_release_time)
-    sol, cl, vs, pr, gr = ADprob.sol, ADprob.clock, ADprob.vars, ADprob.params, ADprob.grid
-    x, y = gridpoints(gr)
+  c0ampl, σ = 0.1, 0.1
+  c0func(x, y) = c0ampl*exp(-(x^2+y^2)/(2σ^2))
+  c0 = @. c0func(x, y)
+  tfinal = nsteps*dt
+  σt = sqrt(2*κ*tfinal + σ^2)
+  cfinal = @. c0ampl*(σ^2/σt^2)*exp(-(x^2+y^2)/(2*σt^2))
 
-    c0ampl, σ = 0.1, 0.1
-    c0func(x, y) = c0ampl*exp(-(x^2+y^2)/(2σ^2))
-    c0 = @. c0func(x, y)
-    tfinal = nsteps*dt
-    σt = sqrt(2*κ*tfinal + σ^2)
-    cfinal = @. c0ampl*(σ^2/σt^2)*exp(-(x^2+y^2)/(2*σt^2))
+  TracerAdvectionDiffusion.set_c!(ADprob, c0)
 
-    TracerAdvectionDiffusion.set_c!(ADprob, c0)
+  stepforward!(ADprob, nsteps)
+  TracerAdvectionDiffusion.updatevars!(ADprob)
 
-    stepforward!(ADprob, nsteps)
-    TracerAdvectionDiffusion.updatevars!(ADprob)
-
-    # Compare to analytic solution
-    isapprox(cfinal, vs.c[:, :, 1], rtol=gr.nx*gr.ny*nsteps*1e-12)
-    isapprox(cfinal, vs.c[:, :, 2], rtol=gr.nx*gr.ny*nsteps*1e-12)
+  # Compare to analytic solution
+  return isapprox(cfinal, vs.c[:, :, 1], rtol=gr.nx*gr.ny*nsteps*1e-12)  && isapprox(cfinal, vs.c[:, :, 2], rtol=gr.nx*gr.ny*nsteps*1e-12)
 end
 """
     test_hyperdiffusion(; kwargs...)
@@ -207,5 +206,5 @@ function test_hyperdiffusion(stepper, dt, tfinal, dev::Device=CPU(); steadyflow 
   stepforward!(prob, nsteps)
   TracerAdvectionDiffusion.updatevars!(prob)
 
-  isapprox(cfinal, vs.c, rtol=gr.nx*gr.ny*nsteps*1e-12)
+  return isapprox(cfinal, vs.c, rtol=gr.nx*gr.ny*nsteps*1e-12)
 end
