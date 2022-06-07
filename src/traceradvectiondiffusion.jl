@@ -206,21 +206,21 @@ end
 
 Return the equation for constant diffusivity problem with `params` and `grid` on device `dev`.
 """
-function Equation(dev::Dev, params::ConstDiffParams, grid)
+function Equation(dev, params::ConstDiffParams, grid)
   L = zeros(dev, eltype(grid), (grid.nkr, grid.nl))
   @. L = - params.η * grid.kr^2 - params.κ * grid.l^2 - params.κh * grid.Krsq^params.nκh
   
   return FourierFlows.Equation(L, calcN!, grid)
 end
 
-function Equation(dev::Dev, params::ConstDiffSteadyFlowParams, grid)
+function Equation(dev, params::ConstDiffSteadyFlowParams, grid)
   L = zeros(dev, eltype(grid), (grid.nkr, grid.nl))
   @. L = - params.η * grid.kr^2 - params.κ * grid.l^2 - params.κh * grid.Krsq^params.nκh
   
   return FourierFlows.Equation(L, calcN_steadyflow!, grid)
 end
 
-function Equation(dev::Dev, params::TurbulentFlowParams, grid)
+function Equation(dev, params::TurbulentFlowParams, grid)
   L = zeros(dev, eltype(grid), (grid.nkr, grid.nl, numberoflayers(params)))
 
   for j in 1:params.nlayers
