@@ -125,7 +125,7 @@ saveproblem(output)
 # We specify that we would like to save the concentration every 50 timesteps using `save_frequency`
 # then step the problem forward.
 
-save_frequency = 25 # Frequency at which output is saved
+save_frequency = 20 # Frequency at which output is saved
 
 startwalltime = time()
 while clock.step <= nsteps
@@ -152,13 +152,15 @@ file = jldopen(output.path)
 iterations = parse.(Int, keys(file["snapshots/t"]))
 t = [file["snapshots/t/$i"] for i ∈ iterations]
 
-# Concentration and streamfunction time series in the lower layer
-cₗ = [file["snapshots/concentration/$i"][:, :, 2] for i ∈ iterations]
-ψₗ = [file["snapshots/streamfunction/$i"][:, :, 2] for i ∈ iterations]
+# Concentration and streamfunction time series in the bottom layer, `layer = 2`.
+layer = 2
+
+c = [file["snapshots/concentration/$i"][:, :, layer] for i ∈ iterations]
+ψ = [file["snapshots/streamfunction/$i"][:, :, layer] for i ∈ iterations]
 
 # We normalize all streamfunctions to have maximum absolute value `amplitude/5`.
-for i in 1:length(ψₗ)
-  ψₗ[i] = amplitude/5 * ψₗ[i] / maximum(abs, ψₗ[i])
+for i in 1:length(ψ)
+  ψ[i] = amplitude/5 * ψ[i] / maximum(abs, ψ[i])
 end
 
 x,  y  = file["grid/x"],  file["grid/y"]
@@ -175,18 +177,20 @@ plot_args = (xlabel = "x",
              colorbar_title = "\n concentration",
              color = :balance)
 
-p = heatmap(x, y, Array(cₗ[1]'), title = "concentration, t = " * @sprintf("%.2f", t[1]); plot_args...)
+p = heatmap(x, y, Array(c[1]'), title = "concentration, t = " * @sprintf("%.2f", t[1]); plot_args...)
 
-contour!(p, x, y, Array(ψₗ[1]'), lw=2, c=:black, ls=:solid, alpha=0.7)
+contour!(p, x, y, Array(ψ[1]'), levels = 0.15:0.3:1.5, lw=2, c=:black, ls=:solid, alpha=0.5)
+contour!(p, x, y, Array(ψ[1]'), levels = -0.15:-0.3:-1.5, lw=2, c=:black, ls=:dash, alpha=0.5)
 
 nothing # hide
 
 # Create a movie of the tracer
 
 anim = @animate for i ∈ 1:length(t)
-  p[1][1][:z] = Array(cₗ[i])
+  p[1][1][:z] = Array(c[i])
   p[1][:title] = "concentration, t = " * @sprintf("%.2f", t[i])
-  p[1][2][:z] = Array(ψₗ[i])
+  p[1][2][:z] = Array(ψ[i])
+  p[1][3][:z] = Array(ψ[i])
 end
 
 mp4(anim, "turbulentflow_advection-diffusion.mp4", fps = 12)
