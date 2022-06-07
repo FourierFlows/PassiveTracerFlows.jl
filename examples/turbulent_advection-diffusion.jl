@@ -10,9 +10,10 @@
 # ```julia
 # using Pkg
 # pkg.add(["PassiveTracerFlows", "Printf", "Plots", "JLD2"])
+# ```
 #
 # ## Let's begin
-# First load `PassiveTracerFlows.jl` and the other packages needed to run this example.
+# First load packages needed to run this example.
 using PassiveTracerFlows, Printf, Plots, JLD2
 using Random: seed!
 
@@ -62,7 +63,7 @@ q₀h = MQGprob.timestepper.filter .* rfft(q₀, (1, 2)) # apply rfft  only in d
 q₀  = irfft(q₀h, grid.nx, (1, 2))                    # apply irfft only in dims=1, 2
 
 MultiLayerQG.set_q!(MQGprob, q₀)
-nothing 
+nothing
 
 # ## Tracer advection-diffusion setup
 #
@@ -131,7 +132,7 @@ saveproblem(output)
 # We specify that we would like to save the concentration every `save_frequency` timesteps;
 # then we step the problem forward.
 
-save_frequency = 50 # Frequency at which output is saved
+save_frequency = 50 # frequency at which output is saved
 
 startwalltime = time()
 while clock.step <= nsteps
@@ -148,7 +149,7 @@ while clock.step <= nsteps
   MultiLayerQG.updatevars!(params.MQGprob)
 end
 
-# ## Visualising the output
+# ## Visualizing the output
 #
 # We now have output from our simulation saved in `advection-diffusion.jld2`.
 # As a demonstration, we load the JLD2 output and create a time series for the tracer
@@ -191,7 +192,7 @@ contour!(p, x, y, Array(ψ[1]'), levels = -0.15:-0.3:-1.5, lw=2, c=:grey, ls=:da
 
 nothing # hide
 
-# Create a movie of the tracer
+# Create a movie of the tracer with the streamlines.
 
 anim = @animate for i ∈ 1:length(t)
   p[1][:title] = "concentration, t = " * @sprintf("%.2f", t[i])
