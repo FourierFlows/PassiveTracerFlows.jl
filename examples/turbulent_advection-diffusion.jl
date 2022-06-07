@@ -13,7 +13,7 @@
 #
 # ## Let's begin
 # First load `PassiveTracerFlows.jl` and the other packages needed to run this example.
-using PassiveTracerFlows, Printf, Plots, JLD2, LinearAlgebra
+using PassiveTracerFlows, Printf, Plots, JLD2
 using Random: seed!
 
 # ## Choosing a device: CPU or GPU
@@ -71,11 +71,10 @@ nothing
 # as an argument to `TracerAdvectionDiffusion.Problem` which sets up an advection-diffusion problem
 # with same parameters where applicable. We also need to pass a value for the constant diffusivity `κ`,
 # the `stepper` used to step the problem forward and when we want the tracer released into the flow.
-# We will let the flow run until it reaches a statistical equilibrium and then advect-diffuse the tracer.
+# We will let the flow run until it reaches a statistical equilibrium using `tracer_release_time`, then advect-diffuse the tracer.
 
-κ = 0.002
+κ = 0.002                        # Constant diffusivity
 nsteps = 4000                    # total number of time-steps
-nsubs = 1                        # number of steps the simulation takes at each iteration 
 tracer_release_time = dt * 8000  # run flow for some time before releasing tracer
 
 ADprob = TracerAdvectionDiffusion.Problem(dev, MQGprob; κ, stepper, tracer_release_time)
@@ -131,7 +130,6 @@ while clock.step <= nsteps
   end
 
   stepforward!(ADprob)
-  TracerAdvectionDiffusion.updatevars!(ADprob)
 end
 
 # Append this information to our saved data for plotting later on
