@@ -126,14 +126,14 @@ function test_diffusion_multilayerqg(stepper, dt, tfinal, dev::Device=CPU())
   ρ = [4.0, 5.0]          
 
   U = zeros(nlayers) 
-  U[1] = 1.0
+  U[1] = 0.0
   U[2] = 0.0
 
   MQGprob = MultiLayerQG.Problem(nlayers, dev;
                                   nx=nx, Lx=Lx, f₀=f₀, g=g, H=H, ρ=ρ, U=U, μ=μ, β=β,
                                   dt=dt, stepper="FilteredRK4", aliased_fraction=0)
   grid = MQGprob.grid
-  q₀  = zeros((grid.nx, grid.ny, nlayers))
+  q₀  = zeros(grid.nx, grid.ny, nlayers)
   q₀h = MQGprob.timestepper.filter .* rfft(q₀, (1, 2)) # apply rfft  only in dims=1, 2
   q₀  = irfft(q₀h, grid.nx, (1, 2))                 # apply irfft only in dims=1, 2
   
