@@ -74,7 +74,7 @@ function Problem(dev, MQGprob::FourierFlows.Problem;
 
   params = TurbulentFlowParams(η, κ, tracer_release_time, MQGprob)
   vars = Vars(dev, grid, MQGprob)
-  equation = Equation(params, grid)
+  equation = Equation(dev, params, grid)
 
   dt = MQGprob.clock.dt
 
