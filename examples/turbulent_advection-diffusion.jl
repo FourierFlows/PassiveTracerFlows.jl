@@ -137,10 +137,7 @@ while clock.step <= nsteps
     println(log)
   end
 
-  stepforward!(ADprob)
-  # Step the flow forward
-  MultiLayerQG.stepforward!(params.MQGprob)
-  MultiLayerQG.updatevars!(params.MQGprob)
+  TracerAdvectionDiffusion.stepforward!(ADprob)
 end
 
 # ## Visualising the output

@@ -403,5 +403,18 @@ function set_c!(sol, params::AbstractTurbulentFlowParams, vars, grid::AbstractGr
 end
 
 set_c!(prob, c) = set_c!(prob.sol, prob.params, prob.vars, prob.grid, c)
+"""
+    function stepforward!(prob)
+
+Step the `TracerAdvectionDiffusion.Problem` and `MultiLayerQG.Problem` forward
+"""
+function stepforward!(prob)
+  stepforward!(ADprob)
+  # Step the flow forward
+  MultiLayerQG.stepforward!(params.MQGprob)
+  MultiLayerQG.updatevars!(params.MQGprob)
+
+  return nothing
+end
 
 end # module
