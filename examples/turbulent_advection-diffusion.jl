@@ -124,6 +124,7 @@ saveproblem(output)
 #
 # We specify that we would like to save the concentration every 50 timesteps using `save_frequency`
 # then step the problem forward.
+
 save_frequency = 25 # Frequency at which output is saved
 
 startwalltime = time()
@@ -137,12 +138,6 @@ while clock.step <= nsteps
   end
 
   stepforward!(ADprob)
-end
-
-# Append this information to our saved data for plotting later on
-jldopen(output.path, "a+") do path
-  path["save_frequency"] = save_frequency
-  path["final_step"] = ADprob.clock.step - 1
 end
 
 # ## Visualising the output
@@ -180,7 +175,7 @@ plot_args = (xlabel = "x",
              colorbar_title = "\n concentration",
              color = :balance)
 
-p = heatmap(x, y, cₗ[1]', title = "concentration, t = " * @sprintf("%.2f", t[1]); plot_args...)
+p = heatmap(x, y, Array(cₗ[1]'), title = "concentration, t = " * @sprintf("%.2f", t[1]); plot_args...)
 
 contour!(p, x, y, Array(ψₗ[1]'), lw=2, c=:black, ls=:solid, alpha=0.7)
 
@@ -189,9 +184,6 @@ nothing # hide
 # Create a movie of the tracer
 
 anim = @animate for i ∈ 1:length(t)
-  println(i)
-  # heatmap!(p, x, y, cₗ[i]'; title = "Concentration, t = " * @sprintf("%.2f", t[i]), plot_args...)
-  # contour!(p, x, y, Array(ψₗ[i]'))
   p[1][1][:z] = Array(cₗ[i])
   p[1][:title] = "concentration, t = " * @sprintf("%.2f", t[i])
   p[1][2][:z] = Array(ψₗ[i])
