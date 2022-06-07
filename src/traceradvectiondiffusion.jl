@@ -62,15 +62,14 @@ function Problem(dev, MQGprob::FourierFlows.Problem;
    tracer_release_time = 0
   )
   
-  nlayers = typeof(MQGprob.params) <: SingleLayerParams ? 1 : 
-            typeof(MQGprob.params) <: TwoLayerParams ? 2 : MQGprob.params.nlayers
+  nlayers = numberoflayers(MQGprob.params)
 
   grid = MQGprob.grid
   
   tracer_release_time < 0 && throw(ArgumentError("tracer_release_time must be non-negative!"))
 
   if tracer_release_time > 0
-    @info "Stepping the flow forward until `t = tracer_release_time`"
+    @info "Stepping the flow forward until t = tracer_release_time = $tracer_release_time"
     step_until!(MQGprob, tracer_release_time)
   end
 
