@@ -162,8 +162,10 @@ function test_diffusion_multilayerqg(stepper, dt, tfinal, dev::Device=CPU())
   TracerAdvectionDiffusion.updatevars!(ADprob)
 
   # Compare to analytic solution
-  return isapprox(cfinal, vs.c[:, :, 1], rtol=gr.nx*gr.ny*nsteps*1e-12)  && isapprox(cfinal, vs.c[:, :, 2], rtol=gr.nx*gr.ny*nsteps*1e-12)
+  return isapprox(cfinal, vs.c[:, :, 1], rtol=gr.nx*gr.ny*nsteps*1e-12)  &&
+         isapprox(cfinal, vs.c[:, :, 2], rtol=gr.nx*gr.ny*nsteps*1e-12)
 end
+
 """
     test_hyperdiffusion(; kwargs...)
 
