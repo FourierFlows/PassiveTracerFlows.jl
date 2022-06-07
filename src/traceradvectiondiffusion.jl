@@ -404,7 +404,8 @@ advect the tracer.
 function set_c!(sol, params::AbstractTurbulentFlowParams, vars, grid::AbstractGrid{T}, c) where T
   nlayers = numberoflayers(params.MQGprob.params)
   
-  fwdtransform!(sol, @CUDA.allowscalar repeat(c, 1, 1, nlayers), params.MQGprob.params)
+  C = @CUDA.allowscalar repeat(c, 1, 1, nlayers)
+  fwdtransform!(sol, C, params.MQGprob.params)
   updatevars!(params, vars, grid, sol)
 
   return nothing

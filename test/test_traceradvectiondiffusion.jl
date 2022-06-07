@@ -150,7 +150,7 @@ function test_diffusion_multilayerqg(stepper, dt, tfinal, dev::Device=CPU())
   x, y = gridpoints(gr)
 
   c0ampl, σ = 0.1, 0.1
-  c0func(x, y) = c0ampl*exp(-(x^2 + y^2) / (2σ^2))
+  c0func(x, y) = c0ampl * exp(-(x^2 + y^2) / (2σ^2))
   c0 = @. c0func(x, y)
   tfinal = nsteps * dt
   σt = sqrt(2κ * tfinal + σ^2)
