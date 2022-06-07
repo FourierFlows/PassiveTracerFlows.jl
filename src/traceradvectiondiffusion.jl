@@ -221,7 +221,7 @@ function Equation(dev, params::ConstDiffSteadyFlowParams, grid)
 end
 
 function Equation(dev, params::TurbulentFlowParams, grid)
-  L = zeros(dev, eltype(grid), (grid.nkr, grid.nl, numberoflayers(params)))
+  L = zeros(dev, eltype(grid), (grid.nkr, grid.nl, params.nlayers))
 
   for j in 1:params.nlayers
       @. L[:, :, j] = - params.η * grid.kr^2 - params.κ * grid.l^2 - params.κh * grid.Krsq^params.nκh
