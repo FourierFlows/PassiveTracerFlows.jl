@@ -138,6 +138,9 @@ while clock.step <= nsteps
   end
 
   stepforward!(ADprob)
+  # Step the flow forward for next iteration
+  MultiLayerQG.stepforward!(params.MQGprob)
+  MultiLayerQG.updatevars!(params.MQGprob)
 end
 
 # ## Visualising the output

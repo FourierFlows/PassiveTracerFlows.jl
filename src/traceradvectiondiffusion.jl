@@ -334,10 +334,6 @@ function calcN_turbulentflow!(N, sol, t, clock, vars, params::AbstractTurbulentF
     u = @. params.MQGprob.vars.u + params.MQGprob.params.U
     v = params.MQGprob.vars.v
 
-    # Step the flow forward for next iteration
-    MultiLayerQG.stepforward!(params.MQGprob)
-    MultiLayerQG.updatevars!(params.MQGprob)
-
     @. vars.cx = - u * vars.cx - v * vars.cy # copies over vars.cx so vars.cx = N in physical space
     MultiLayerQG.fwdtransform!(N, vars.cx, params.MQGprob.params)
 
