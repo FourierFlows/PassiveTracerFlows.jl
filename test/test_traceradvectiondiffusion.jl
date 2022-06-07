@@ -133,16 +133,19 @@ function test_diffusion_multilayerqg(stepper, dt, tfinal, dev::Device=CPU())
                                  nx=nx, Lx=Lx, f₀=f₀, g=g, H=H, ρ=ρ, U=U, μ=μ, β=β,
                                  dt=dt, stepper="FilteredRK4", aliased_fraction=0)
   grid = MQGprob.grid
-  q₀  = ArrayType(dev)(zeros(grid.nx, grid.ny, nlayers))
-  q₀h = MQGprob.timestepper.filter .* rfft(q₀, (1, 2)) # apply rfft  only in dims = 1, 2
-  q₀  = irfft(q₀h, grid.nx, (1, 2))                    # apply irfft only in dims = 1, 2
+  q₀ = zeros(dev, T, (grid.nx, grid.ny, nlayers))
   
   MultiLayerQG.set_q!(MQGprob, q₀)
   
   κ = 0.01
   tracer_release_time = dt * 50
+
   nsteps = round(Int, tfinal/dt)
-  ADprob = TracerAdvectionDiffusion.Problem(dev, MQGprob; κ = κ, stepper = stepper, tracer_release_time = tracer_release_time)
+  if !isapprox(tfinal, nsteps*dt, rtol=rtol_traceradvectiondiffusion)
+    error("tfinal is not multiple of dt")
+  end
+
+  ADprob = TracerAdvectionDiffusion.Problem(dev, MQGprob; κ, stepper, tracer_release_time)
   sol, cl, vs, pr, gr = ADprob.sol, ADprob.clock, ADprob.vars, ADprob.params, ADprob.grid
   x, y = gridpoints(gr)
 
