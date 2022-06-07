@@ -34,6 +34,7 @@ nothing # hide
       n = 128            # 2D resolution = n²
 stepper = "FilteredRK4"  # timestepper
      dt = 2.5e-3         # timestep
+nothing # hide
 
 # Physical parameters 
 L = 2π                   # domain size
@@ -48,6 +49,7 @@ f₀, g = 1, 1             # Coriolis parameter and gravitational constant
  U = zeros(nlayers) # the imposed mean zonal flow in each layer
  U[1] = 1.0
  U[2] = 0.0
+nothing # hide
 
 # ### `MultiLayerQG.Problem` setup, shortcuts and initial conditions
 MQGprob = MultiLayerQG.Problem(nlayers, dev;
@@ -63,7 +65,7 @@ q₀h = MQGprob.timestepper.filter .* rfft(q₀, (1, 2)) # apply rfft  only in d
 q₀  = irfft(q₀h, grid.nx, (1, 2))                    # apply irfft only in dims=1, 2
 
 MultiLayerQG.set_q!(MQGprob, q₀)
-nothing
+nothing # hide
 
 # ## Tracer advection-diffusion setup
 #
