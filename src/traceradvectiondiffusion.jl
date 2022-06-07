@@ -214,14 +214,14 @@ function Equation(params::ConstDiffSteadyFlowParams, grid)
 end
 
 function Equation(params::TurbulentFlowParams, grid)
-    L = zeros(grid.nkr, grid.nl, params.nlayers)
+  L = zeros(grid.nkr, grid.nl, params.nlayers)
 
-    for n in 1:params.nlayers
-        @. L[:, :, n] = -params.η * grid.kr^2 - params.κ * grid.l^2 - params.κh * grid.Krsq^params.nκh
-    end
-
-    return FourierFlows.Equation(L, calcN_turbulentflow!, grid)
+  for n in 1:params.nlayers
+      @. L[:, :, n] = -params.η * grid.kr^2 - params.κ * grid.l^2 - params.κh * grid.Krsq^params.nκh
   end
+
+  return FourierFlows.Equation(L, calcN_turbulentflow!, grid)
+end
 
 # --
 # Vars
@@ -403,18 +403,5 @@ function set_c!(sol, params::AbstractTurbulentFlowParams, vars, grid::AbstractGr
 end
 
 set_c!(prob, c) = set_c!(prob.sol, prob.params, prob.vars, prob.grid, c)
-"""
-    function stepforward!(prob)
-
-Step the `TracerAdvectionDiffusion.Problem` and `MultiLayerQG.Problem` forward
-"""
-function stepforward!(prob)
-  stepforward!(ADprob)
-  # Step the flow forward
-  MultiLayerQG.stepforward!(params.MQGprob)
-  MultiLayerQG.updatevars!(params.MQGprob)
-
-  return nothing
-end
 
 end # module

@@ -71,14 +71,14 @@ nothing
 # as an argument to `TracerAdvectionDiffusion.Problem` which sets up an advection-diffusion problem
 # with same parameters where applicable. We also need to pass a value for the constant diffusivity `κ`,
 # the `stepper` used to step the problem forward and when we want the tracer released into the flow.
-# We will let the flow run until it reaches a statistical equilibrium using `tracer_release_time`, then advect-diffuse the tracer.
+# We will let the flow run up to `t = tracer_release_time` and then release the tracer and let it
+# evolve with the flow.
 
-κ = 0.002                        # Constant diffusivity
+κ = 0.005                        # Constant diffusivity
 nsteps = 4000                    # total number of time-steps
-tracer_release_time = dt * 8000  # run flow for some time before releasing tracer
+tracer_release_time = 25.0       # run flow for some time before releasing tracer
 
 ADprob = TracerAdvectionDiffusion.Problem(dev, MQGprob; κ, stepper, tracer_release_time)
-nothing
 
 # ## Initial condition for concentration in both layers
 #
@@ -125,7 +125,7 @@ saveproblem(output)
 # We specify that we would like to save the concentration every 20 timesteps using `save_frequency`
 # then step the problem forward.
 
-save_frequency = 20 # Frequency at which output is saved
+save_frequency = 50 # Frequency at which output is saved
 
 startwalltime = time()
 while clock.step <= nsteps
@@ -137,14 +137,15 @@ while clock.step <= nsteps
     println(log)
   end
 
-  TracerAdvectionDiffusion.stepforward!(ADprob)
+  stepforward!(ADprob)
+  stepforward!(params.MQGprob)
 end
 
 # ## Visualising the output
 #
 # We now have output from our simulation saved in `advection-diffusion.jld2`.
-# From this we can create a time series for the tracer that has been advected-diffused
-# in the lower layer of our turbulent flow (the simulation from the upper layer can be obtained in a similar manner).
+# As a demonstration, we load the JLD2 output and create a time series for the tracer
+# that has been advected-diffused in the lower layer of our fluid.
 
 # Create time series for the concentration in the upper layer
 file = jldopen(output.path)
@@ -158,9 +159,9 @@ layer = 2
 c = [file["snapshots/concentration/$i"][:, :, layer] for i ∈ iterations]
 ψ = [file["snapshots/streamfunction/$i"][:, :, layer] for i ∈ iterations]
 
-# We normalize all streamfunctions to have maximum absolute value `amplitude/5`.
+# We normalize all streamfunctions to have maximum absolute value `amplitude / 5`.
 for i in 1:length(ψ)
-  ψ[i] = amplitude/5 * ψ[i] / maximum(abs, ψ[i])
+  ψ[i] *= (amplitude / 5) / maximum(abs, ψ[i])
 end
 
 x,  y  = file["grid/x"],  file["grid/y"]
