@@ -122,7 +122,7 @@ saveproblem(output)
 
 # ## Step the problem forward and save the output
 #
-# We specify that we would like to save the concentration every 50 timesteps using `save_frequency`
+# We specify that we would like to save the concentration every 20 timesteps using `save_frequency`
 # then step the problem forward.
 
 save_frequency = 20 # Frequency at which output is saved
@@ -138,7 +138,7 @@ while clock.step <= nsteps
   end
 
   stepforward!(ADprob)
-  # Step the flow forward for next iteration
+  # Step the flow forward
   MultiLayerQG.stepforward!(params.MQGprob)
   MultiLayerQG.updatevars!(params.MQGprob)
 end
