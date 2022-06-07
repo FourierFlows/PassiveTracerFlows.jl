@@ -51,9 +51,10 @@ function Problem(dev;
 end
 
 """
-    Problem(MQGprob; parameters...)
+    Problem(dev, MQGprob; parameters...)
 
-Construct a constant diffusivity problem with a turbulent flow from the `GeophysicalFlows.jl` package.
+Construct a constant diffusivity problem on device `dev` using the flow from a
+`GeophysicalFlows.MultiLayerQG` problem.
 """
 function Problem(dev, MQGprob::FourierFlows.Problem;
                      κ = 0.1,
@@ -62,8 +63,6 @@ function Problem(dev, MQGprob::FourierFlows.Problem;
    tracer_release_time = 0
   )
   
-  nlayers = numberoflayers(MQGprob.params)
-
   grid = MQGprob.grid
   
   tracer_release_time < 0 && throw(ArgumentError("tracer_release_time must be non-negative!"))
@@ -73,7 +72,7 @@ function Problem(dev, MQGprob::FourierFlows.Problem;
     step_until!(MQGprob, tracer_release_time)
   end
 
-  params = TurbulentFlowParams(η, κ, nlayers, tracer_release_time, MQGprob)
+  params = TurbulentFlowParams(η, κ, tracer_release_time, MQGprob)
   vars = Vars(dev, grid, MQGprob)
   equation = Equation(params, grid)
 
@@ -128,7 +127,7 @@ Included are:
 
 $(TYPEDFIELDS)
 """
-struct ConstDiffSteadyFlowParams{T,A} <: AbstractSteadyFlowParams
+struct ConstDiffSteadyFlowParams{T, A} <: AbstractSteadyFlowParams
   "isotropic horizontal diffusivity coefficient"
      η :: T
   "isotropic vertical diffusivity coefficient"
@@ -138,9 +137,9 @@ struct ConstDiffSteadyFlowParams{T,A} <: AbstractSteadyFlowParams
   "isotropic hyperdiffusivity order"  
    nκh :: Int
    "x-component of advecting flow"
-      u :: A
+     u :: A
    "y-component of advecting flow"
-      v :: A
+     v :: A
 end
 
 """
@@ -162,18 +161,18 @@ ConstDiffSteadyFlowParams(η, κ, u, v, grid) = ConstDiffSteadyFlowParams(η, κ
 """
     struct TurbulentFlowParams{T} <: AbstractTurbulentFlowParams
 
-A struct containing the parameters for a constant diffusivity problem and turbulent 
-`MultiLayerQG` flow.
+A struct containing the parameters for a constant diffusivity problem with flow obtained
+from a `GeophysicalFlows.MultiLayerQG` problem.
 
 $(TYPEDFIELDS)
 """
 struct TurbulentFlowParams{T} <: AbstractTurbulentFlowParams
   "isotropic horizontal diffusivity coefficient"
-                   η :: T
+                    η :: T
   "isotropic vertical diffusivity coefficient"
-                   κ :: T
+                    κ :: T
   "isotropic hyperdiffusivity coefficient"
-                  κh :: T
+                   κh :: T
   "isotropic hyperdiffusivity order"  
                   nκh :: Int
   "number of layers in which the tracer is advected-diffused"
@@ -185,12 +184,18 @@ struct TurbulentFlowParams{T} <: AbstractTurbulentFlowParams
 end
 
 """
-    TurbulentFlowParams(η, κ, nlayers, tracer_release_time)
+    TurbulentFlowParams(η, κ, tracer_release_time, MQGprob)
 
-The constructor for the `params` struct for a constant diffusivity and turbulent flow.    
+The constructor for the `params` for a constant diffusivity problem with flow obtained
+from a `GeophysicalFlows.MultiLayerQG` problem.
 """
-TurbulentFlowParams(η, κ, nlayers, tracer_release_time, MQGprob) =
-  TurbulentFlowParams(η, κ, 0η, 0, nlayers, tracer_release_time, MQGprob)
+function TurbulentFlowParams(η, κ, tracer_release_time, MQGprob)
+  nlayers = numberoflayers(MQGprob.params)
+  
+  MultiLayerQG.updatevars!(MQGprob)
+
+  return TurbulentFlowParams(η, κ, 0η, 0, nlayers, tracer_release_time, MQGprob)
+end
 
 # --
 # Equations
@@ -199,7 +204,7 @@ TurbulentFlowParams(η, κ, nlayers, tracer_release_time, MQGprob) =
 """
     Equation(params, grid)
 
-Returns the equation for constant diffusivity problem with params p and grid g.
+Return the equation for constant diffusivity problem with params p and grid g.
 """
 function Equation(params::ConstDiffParams, grid)
   L = @. -params.η * grid.kr^2 - params.κ * grid.l^2 - params.κh * grid.Krsq^params.nκh
@@ -216,8 +221,8 @@ end
 function Equation(params::TurbulentFlowParams, grid)
   L = zeros(grid.nkr, grid.nl, params.nlayers)
 
-  for n in 1:params.nlayers
-      @. L[:, :, n] = -params.η * grid.kr^2 - params.κ * grid.l^2 - params.κh * grid.Krsq^params.nκh
+  for j in 1:params.nlayers
+      @. L[:, :, j] = -params.η * grid.kr^2 - params.κ * grid.l^2 - params.κh * grid.Krsq^params.nκh
   end
 
   return FourierFlows.Equation(L, calcN_turbulentflow!, grid)
@@ -252,7 +257,7 @@ end
 """
     Vars(dev, grid)
 
-Returns the variables `vars` for a constant diffusivity problem on `grid` and device `dev`.
+Return the variables `vars` for a constant diffusivity problem on `grid` and device `dev`.
 """
 function Vars(::Dev, grid::AbstractGrid{T}) where {Dev, T}
 
@@ -287,6 +292,8 @@ end
 Calculate the advective terms for a tracer equation with constant diffusivity and time-varying flow.
 """
 function calcN!(N, sol, t, clock, vars, params::AbstractConstDiffParams, grid)
+  dealias!(sol, grid)
+
   @. vars.cxh = im * grid.kr * sol
   @. vars.cyh = im * grid.l  * sol
 
@@ -307,6 +314,8 @@ end
 Calculate the advective terms for a tracer equation with constant diffusivity and time-constant flow.
 """
 function calcN_steadyflow!(N, sol, t, clock, vars, params::AbstractSteadyFlowParams, grid)
+  dealias!(sol, grid)
+  
   @. vars.cxh = im * grid.kr * sol
   @. vars.cyh = im * grid.l  * sol
 
@@ -325,20 +334,22 @@ end
 Calculate the advective terms for a tracer equation with constant diffusivity and turbulent `MultiLayerQG` flow.
 """
 function calcN_turbulentflow!(N, sol, t, clock, vars, params::AbstractTurbulentFlowParams, grid)
-    @. vars.cxh = im * grid.kr * sol
-    @. vars.cyh = im * grid.l  * sol
+  dealias!(sol, grid)
   
-    MultiLayerQG.invtransform!(vars.cx, vars.cxh, params.MQGprob.params)
-    MultiLayerQG.invtransform!(vars.cy, vars.cyh, params.MQGprob.params)
+  @. vars.cxh = im * grid.kr * sol
+  @. vars.cyh = im * grid.l  * sol
 
-    u = @. params.MQGprob.vars.u + params.MQGprob.params.U
-    v = params.MQGprob.vars.v
+  invtransform!(vars.cx, vars.cxh, params.MQGprob.params)
+  invtransform!(vars.cy, vars.cyh, params.MQGprob.params)
 
-    @. vars.cx = - u * vars.cx - v * vars.cy # copies over vars.cx so vars.cx = N in physical space
-    MultiLayerQG.fwdtransform!(N, vars.cx, params.MQGprob.params)
+  u = @. params.MQGprob.vars.u + params.MQGprob.params.U
+  v = params.MQGprob.vars.v
 
-    return nothing
-  end
+  @. vars.cx = - u * vars.cx - v * vars.cy # copies over vars.cx so vars.cx = N in physical space
+  fwdtransform!(N, vars.cx, params.MQGprob.params)
+
+  return nothing
+end
 
 # --
 # Helper functions
@@ -366,7 +377,7 @@ that is being advected by a turbulent flow.
 function updatevars!(params::AbstractTurbulentFlowParams, vars, grid, sol)  
   @. vars.ch = sol
   
-  MultiLayerQG.invtransform!(vars.c, deepcopy(vars.ch), params.MQGprob.params)
+  invtransform!(vars.c, deepcopy(vars.ch), params.MQGprob.params)
 
   return nothing
 end
@@ -396,7 +407,7 @@ advect the tracer.
 function set_c!(sol, params::AbstractTurbulentFlowParams, vars, grid::AbstractGrid{T}, c) where T
   nlayers = numberoflayers(params.MQGprob.params)
   
-  MultiLayerQG.fwdtransform!(sol, repeat(c, 1, 1, nlayers), params.MQGprob.params)
+  fwdtransform!(sol, repeat(c, 1, 1, nlayers), params.MQGprob.params)
   updatevars!(params, vars, grid, sol)
 
   return nothing
