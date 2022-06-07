@@ -195,7 +195,7 @@ function test_hyperdiffusion(stepper, dt, tfinal, dev::Device=CPU(); steadyflow 
 
   vs = TracerAdvectionDiffusion.Vars(dev, gr)
   pr = TracerAdvectionDiffusion.ConstDiffSteadyFlowParams(η, κ, κh, nκh, u, v)
-  eq = TracerAdvectionDiffusion.Equation(pr, gr)
+  eq = TracerAdvectionDiffusion.Equation(dev, pr, gr)
   prob = FourierFlows.Problem(eq, stepper, dt, gr, vs, pr, dev)
 
   c0ampl, σ = 0.1, 0.1
