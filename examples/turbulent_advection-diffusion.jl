@@ -36,7 +36,7 @@ stepper = "FilteredRK4"  # timestepper
      dt = 2.5e-3         # timestep
 nothing # hide
 
-# Physical parameters 
+# ### Physical parameters 
 L = 2π                   # domain size
 μ = 5e-2                 # bottom drag
 β = 5                    # the y-gradient of planetary PV
@@ -157,17 +157,17 @@ end
 # As a demonstration, we load the JLD2 output and create a time series for the tracer
 # that has been advected-diffused in the lower layer of our fluid.
 
-# Create time series for the concentration in the upper layer
+# Create time series for the concentration and streamfunction in the bottom layer, `layer = 2`.
 file = jldopen(output.path)
 
 iterations = parse.(Int, keys(file["snapshots/t"]))
 t = [file["snapshots/t/$i"] for i ∈ iterations]
 
-# Concentration and streamfunction time series in the bottom layer, `layer = 2`.
 layer = 2
 
 c = [file["snapshots/concentration/$i"][:, :, layer] for i ∈ iterations]
 ψ = [file["snapshots/streamfunction/$i"][:, :, layer] for i ∈ iterations]
+nothing # hide
 
 # We normalize all streamfunctions to have maximum absolute value `amplitude / 5`.
 for i in 1:length(ψ)
