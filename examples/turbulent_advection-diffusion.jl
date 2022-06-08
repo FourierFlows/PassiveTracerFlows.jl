@@ -10,9 +10,10 @@
 # ```julia
 # using Pkg
 # pkg.add(["PassiveTracerFlows", "Printf", "Plots", "JLD2"])
+# ```
 #
 # ## Let's begin
-# First load `PassiveTracerFlows.jl` and the other packages needed to run this example.
+# First load packages needed to run this example.
 using PassiveTracerFlows, Printf, Plots, JLD2
 using Random: seed!
 
@@ -33,8 +34,9 @@ nothing # hide
       n = 128            # 2D resolution = n²
 stepper = "FilteredRK4"  # timestepper
      dt = 2.5e-3         # timestep
+nothing # hide
 
-# Physical parameters 
+# ### Physical parameters 
 L = 2π                   # domain size
 μ = 5e-2                 # bottom drag
 β = 5                    # the y-gradient of planetary PV
@@ -47,6 +49,7 @@ f₀, g = 1, 1             # Coriolis parameter and gravitational constant
  U = zeros(nlayers) # the imposed mean zonal flow in each layer
  U[1] = 1.0
  U[2] = 0.0
+nothing # hide
 
 # ### `MultiLayerQG.Problem` setup, shortcuts and initial conditions
 MQGprob = MultiLayerQG.Problem(nlayers, dev;
@@ -62,7 +65,7 @@ q₀h = MQGprob.timestepper.filter .* rfft(q₀, (1, 2)) # apply rfft  only in d
 q₀  = irfft(q₀h, grid.nx, (1, 2))                    # apply irfft only in dims=1, 2
 
 MultiLayerQG.set_q!(MQGprob, q₀)
-nothing 
+nothing # hide
 
 # ## Tracer advection-diffusion setup
 #
@@ -131,7 +134,7 @@ saveproblem(output)
 # We specify that we would like to save the concentration every `save_frequency` timesteps;
 # then we step the problem forward.
 
-save_frequency = 50 # Frequency at which output is saved
+save_frequency = 50 # frequency at which output is saved
 
 startwalltime = time()
 while clock.step <= nsteps
@@ -148,23 +151,23 @@ while clock.step <= nsteps
   MultiLayerQG.updatevars!(params.MQGprob)
 end
 
-# ## Visualising the output
+# ## Visualizing the output
 #
 # We now have output from our simulation saved in `advection-diffusion.jld2`.
 # As a demonstration, we load the JLD2 output and create a time series for the tracer
 # that has been advected-diffused in the lower layer of our fluid.
 
-# Create time series for the concentration in the upper layer
+# Create time series for the concentration and streamfunction in the bottom layer, `layer = 2`.
 file = jldopen(output.path)
 
 iterations = parse.(Int, keys(file["snapshots/t"]))
 t = [file["snapshots/t/$i"] for i ∈ iterations]
 
-# Concentration and streamfunction time series in the bottom layer, `layer = 2`.
 layer = 2
 
 c = [file["snapshots/concentration/$i"][:, :, layer] for i ∈ iterations]
 ψ = [file["snapshots/streamfunction/$i"][:, :, layer] for i ∈ iterations]
+nothing # hide
 
 # We normalize all streamfunctions to have maximum absolute value `amplitude / 5`.
 for i in 1:length(ψ)
@@ -191,7 +194,7 @@ contour!(p, x, y, Array(ψ[1]'), levels = -0.15:-0.3:-1.5, lw=2, c=:grey, ls=:da
 
 nothing # hide
 
-# Create a movie of the tracer
+# Create a movie of the tracer with the streamlines.
 
 anim = @animate for i ∈ 1:length(t)
   p[1][:title] = "concentration, t = " * @sprintf("%.2f", t[i])
