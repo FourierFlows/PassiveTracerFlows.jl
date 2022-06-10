@@ -40,11 +40,10 @@ nothing # hide
 # ## Flow
 # We set a constant background flow. Note this is stil done using a `Function` 
 uvel(x) = 0.05
-#uvel_t(x, t) = log(1 + t / 2500) an example of flow increasing with time
 
 # ## Problem setup
 # We initialize a `Problem` by providing a set of keyword arguments.
-prob = TracerAdvectionDiffusion.Problem(dev, true; nx=n, Lx=L, κ=κ, steadyflow=false, u=uvel_t,
+prob = TracerAdvectionDiffusion.Problem(dev, true; nx=n, Lx=L, κ=κ, steadyflow=true, u=uvel,
                                           dt=dt, stepper=stepper)
 nothing # hide
 

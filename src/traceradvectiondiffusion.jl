@@ -232,7 +232,7 @@ function ConstDiffSteadyFlowParams(η, κ, κh, nκh, u::Function, v::Function, 
   return ConstDiffSteadyFlowParams2D(η, κ, κh, nκh, ugrid, vgrid)
 end
 
-ConstDiffSteadyFlowParams(η, κ, u, v, grid::OneDGrid) = ConstDiffSteadyFlowParams(η, κ, 0η, 0, u, v, grid)
+ConstDiffSteadyFlowParams(η, κ, u, v, grid::TwoDGrid) = ConstDiffSteadyFlowParams(η, κ, 0η, 0, u, v, grid)
 
 """
     struct ConstDiffTurbulentFlowParams{T} <: AbstractTurbulentFlowParams
@@ -368,7 +368,7 @@ end
 
 Return the variables `vars` for a constant diffusivity problem on `grid` and device `dev`.
 """
-function Vars(::Dev, grid::OneDGrid; T=T) where {Dev}
+function Vars(::Dev, grid::OneDGrid; T=Float64) where {Dev}
 
     @devzeros Dev T (grid.nx) c cx
     @devzeros Dev Complex{T} (grid.nkr) ch cxh
@@ -376,7 +376,7 @@ function Vars(::Dev, grid::OneDGrid; T=T) where {Dev}
     return Vars1D(c, cx, ch, cxh)
 end
 
-function Vars(::Dev, grid::TwoDGrid; T=T) where {Dev}
+function Vars(::Dev, grid::TwoDGrid; T=Float64) where {Dev}
 
   @devzeros Dev T (grid.nx, grid.ny) c cx cy
   @devzeros Dev Complex{T} (grid.nkr, grid.nl) ch cxh cyh

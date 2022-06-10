@@ -17,6 +17,7 @@ const EXAMPLES_DIR = joinpath(@__DIR__, "..", "examples")
 const OUTPUT_DIR   = joinpath(@__DIR__, "src/literated")
 
 examples = [
+    "onedim_gaussiandiff.jl"
     "cellularflow.jl",
     "turbulent_advection-diffusion.jl"
 ]
@@ -56,6 +57,7 @@ makedocs(
            "Home" => "index.md",
            "Examples" => Any[
              "TracerAdvectionDiffusion" => Any[
+               "literated/onedim_gaussiandiff.md",
                "literated/cellularflow.md",
                "literated/turbulent_advection-diffusion.md",
                ]

@@ -1,4 +1,75 @@
 """
+    test_constvel1D(; kwargs...)
+
+Advect a gaussian concentration `c0(x, t)` with a constant velocity flow
+`u(x, y) = uvel` and compare the final state with
+`cfinal = c0(x - uvel * tfinal)`.
+"""
+function test_constvel1D(stepper, dt, nsteps, dev::Device=CPU())
+
+  nx, Lx = 128, 2π
+  uvel = 0.05
+  u(x) = uvel
+
+  prob = TracerAdvectionDiffusion.Problem(dev, true; nx, Lx, κ=0.0, u, dt, stepper, steadyflow=true)
+  sol, cl, vs, pr, gr = prob.sol, prob.clock, prob.vars, prob.params, prob.grid
+
+  x = gr.x
+
+  σ = 0.1
+  c0ampl = 0.1
+  c0func(x) = c0ampl * exp(-(x^2) / (2σ^2))
+
+  c0 = c0func.(x)
+  tfinal = nsteps * dt
+  cfinal = @. c0func(x - uvel * tfinal)
+
+  TracerAdvectionDiffusion.set_c!(prob, c0)
+
+  stepforward!(prob, nsteps)
+  TracerAdvectionDiffusion.updatevars!(prob)
+
+  return isapprox(cfinal, vs.c, rtol = gr.nx*nsteps*1e-12)
+end
+
+"""
+    test_timedependenttvel1D(; kwargs...)
+
+Advect a gaussian concentration `c0(x, t)` with a time-varying velocity flow
+`u(x, t) = uvel * sign(-t + tfinal/2)` and compares the final
+state with `cfinal = c0(x - uvel * tfinal)`.
+"""
+function test_timedependentvel1D(stepper, dt, tfinal, dev::Device=CPU(); uvel = 0.05)
+  
+  nx, Lx = 128, 2π
+  nsteps = round(Int, tfinal/dt)
+  
+  if !isapprox(tfinal, nsteps*dt, rtol=rtol_traceradvectiondiffusion)
+    error("tfinal is not multiple of dt")
+  end
+  
+  u(x, t) = uvel * t + uvel * dt/2
+
+  prob = TracerAdvectionDiffusion.Problem(dev, true; nx, Lx, κ=0.0, u, dt, stepper)
+  sol, cl, vs, pr, gr = prob.sol, prob.clock, prob.vars, prob.params, prob.grid
+  x = grid.x
+
+  σ = 0.2
+  c0func(x) = 0.1 * exp(-(x^2) / (2σ^2))
+
+  c0 = @. c0func(x)
+  tfinal = nsteps * dt
+  cfinal = @. c0func(x -  0.5uvel * tfinal^2)
+
+  TracerAdvectionDiffusion.set_c!(prob, c0)
+
+  stepforward!(prob, nsteps)
+  TracerAdvectionDiffusion.updatevars!(prob)
+
+  return isapprox(cfinal, vs.c, rtol = gr.nx*nsteps*1e-12)
+end
+
+"""
     test_constvel(; kwargs...)
 
 Advect a gaussian concentration `c0(x, y, t)` with a constant velocity flow
@@ -72,6 +143,44 @@ function test_timedependentvel(stepper, dt, tfinal, dev::Device=CPU(); uvel = 0.
   return isapprox(cfinal, vs.c, rtol = gr.nx*gr.ny*nsteps*1e-12)
 end
 
+"""
+    test_diffusion1D(; kwargs...)
+
+Diffuses a gaussian concentration c0(x, t) and compares the final state with
+the analytic solution of the heat equation, cfinal
+"""
+function test_diffusion1D(stepper, dt, tfinal, dev::Device=CPU(); steadyflow = true)
+
+  nx = 128
+  Lx = 2π
+   κ = 0.01
+  nsteps = round(Int, tfinal/dt)
+
+  if !isapprox(tfinal, nsteps*dt, rtol=rtol_traceradvectiondiffusion)
+    error("tfinal is not multiple of dt")
+  end
+
+  prob = TracerAdvectionDiffusion.Problem(dev, true; steadyflow=steadyflow, nx=nx,
+    Lx=Lx, κ=κ, dt=dt, stepper=stepper)
+  sol, cl, vs, pr, gr = prob.sol, prob.clock, prob.vars, prob.params, prob.grid
+  x = grid.x
+
+  
+  c0ampl, σ₀ = 0.1, 0.1
+  σ(t) = sqrt(2κ * t + σ₀)
+  c0func(x, t) = (c0ampl / σ(t)) * exp(-(x^2) / (2 * σ(t)^2))
+
+  c0 = @. c0func(x, 0)
+  tfinal = nsteps * dt
+  cfinal = @. c0func(x, tfinal)
+
+  TracerAdvectionDiffusion.set_c!(prob, c0)
+
+  stepforward!(prob, nsteps)
+  TracerAdvectionDiffusion.updatevars!(prob)
+
+  return isapprox(cfinal, vs.c, rtol=gr.nx*nsteps*1e-12)
+end
 
 """
     test_diffusion(; kwargs...)
@@ -191,10 +300,12 @@ function test_hyperdiffusion(stepper, dt, tfinal, dev::Device=CPU(); steadyflow 
   gr = TwoDGrid(dev, nx, Lx)
   x, y = gridpoints(gr)
 
-  u, v = zero(x), zero(x) #0*x, 0*x
+  #u, v = zero(x), zero(x) #0*x, 0*x
+  u(x, y) = 0.0
+  v(x, y) = 0.0
 
   vs = TracerAdvectionDiffusion.Vars(dev, gr)
-  pr = TracerAdvectionDiffusion.ConstDiffSteadyFlowParams(η, κ, κh, nκh, u, v)
+  pr = TracerAdvectionDiffusion.ConstDiffSteadyFlowParams(η, κ, κh, nκh, u, v, gr)
   eq = TracerAdvectionDiffusion.Equation(dev, pr, gr)
   prob = FourierFlows.Problem(eq, stepper, dt, gr, vs, pr, dev)
 
