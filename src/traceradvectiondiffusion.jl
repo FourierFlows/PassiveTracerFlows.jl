@@ -524,8 +524,7 @@ updatevars!(prob) = updatevars!(prob.params, prob.vars, prob.grid, prob.sol)
 Set the solution `sol` as the transform of `c` and update variables `vars`.
 """
 function set_c!(sol, params::Union{AbstractTimeVaryingFlowParams, AbstractSteadyFlowParams}, vars, grid, c)
-  C = @CUDA.allowscalar c
-  mul!(sol, grid.rfftplan, C)
+  mul!(sol, grid.rfftplan, c)
   
   updatevars!(params, vars, grid, sol)
   
