@@ -57,7 +57,7 @@ makedocs(
            "Home" => "index.md",
            "Examples" => Any[
              "TracerAdvectionDiffusion" => Any[
-               "literated/onedim_gaussiandifusionf.md",
+               "literated/onedim_gaussiandiffusion.md",
                "literated/cellularflow.md",
                "literated/turbulent_advection-diffusion.md",
                ]

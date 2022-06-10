@@ -14,7 +14,7 @@
 #
 # ## Let's begin
 # First load packages needed to run this example.
-using PassiveTracerFlows, Printf, JLD2, LinearAlgebra
+using PassiveTracerFlows, Plots, Printf, JLD2, LinearAlgebra
 
 # ## Choosing a device: CPU or GPU
 
