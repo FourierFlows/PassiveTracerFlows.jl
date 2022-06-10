@@ -17,7 +17,7 @@ const EXAMPLES_DIR = joinpath(@__DIR__, "..", "examples")
 const OUTPUT_DIR   = joinpath(@__DIR__, "src/literated")
 
 examples = [
-    "onedim_gaussiandiff.jl",
+    "onedim_gaussiandiffusion.jl",
     "cellularflow.jl",
     "turbulent_advection-diffusion.jl"
 ]
