@@ -170,6 +170,7 @@ function test_diffusion1D(stepper, dt, tfinal, dev::Device=CPU(); steadyflow = t
   σ(t) = sqrt(2κ * t + σ₀)
   c0func(x, t) = (c0ampl / σ(t)) * exp(-(x^2) / (2 * σ(t)^2))
 
+  c0 = ArrayType(dev)(similar(vs.c))
   c0 = @. c0func(x, 0)
   tfinal = nsteps * dt
   cfinal = @. c0func(x, tfinal)
