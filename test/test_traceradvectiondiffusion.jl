@@ -13,8 +13,7 @@ function test_constvel1D(stepper, dt, nsteps, dev::Device=CPU())
 
   prob = TracerAdvectionDiffusion.Problem(dev, true; nx, Lx, κ=0.0, u, dt, stepper, steadyflow=true)
   sol, cl, vs, pr, gr = prob.sol, prob.clock, prob.vars, prob.params, prob.grid
-
-  x = ArrayType(dev)(gr.x)
+  x = ArrayType(dev)(Array(gr.x))
 
   σ = 0.1
   c0ampl = 0.1
@@ -52,7 +51,7 @@ function test_timedependentvel1D(stepper, dt, tfinal, dev::Device=CPU(); uvel = 
 
   prob = TracerAdvectionDiffusion.Problem(dev, true; nx, Lx, κ=0.0, u, dt, stepper)
   sol, cl, vs, pr, gr = prob.sol, prob.clock, prob.vars, prob.params, prob.grid
-  x = ArrayType(dev)(gr.x)
+  x = ArrayType(dev)(Array(gr.x))
 
   σ = 0.2
   c0func(x) = 0.1 * exp(-(x^2) / (2σ^2))
@@ -163,8 +162,7 @@ function test_diffusion1D(stepper, dt, tfinal, dev::Device=CPU(); steadyflow = t
   prob = TracerAdvectionDiffusion.Problem(dev, true; steadyflow=steadyflow, nx=nx,
     Lx=Lx, κ=κ, dt=dt, stepper=stepper)
   sol, cl, vs, pr, gr = prob.sol, prob.clock, prob.vars, prob.params, prob.grid
-  x = ArrayType(dev)(gr.x)
-
+  x = ArrayType(dev)(Array(gr.x))
   
   c0ampl, σ₀ = 0.1, 0.1
   σ(t) = sqrt(2κ * t + σ₀)
