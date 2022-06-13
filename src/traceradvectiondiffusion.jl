@@ -216,7 +216,7 @@ end
 The constructor for the `params` struct for constant diffusivity problem and steady flow.
 """
 function ConstDiffSteadyFlowParams(κ, κh, nκh, u::Function, grid::OneDGrid)
-    x = grid.x
+    x = ArrayType(dev)([gr.x[i] for i ∈ 1:gr.nx])
    ugrid = u.(x)
    
    return ConstDiffSteadyFlowParams1D(κ, κh, nκh, ugrid)
