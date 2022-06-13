@@ -43,7 +43,7 @@ steadyflow = false,
 )
 
 grid = OneDGrid(dev, nx, Lx; T=T)
-params = steadyflow==true ? ConstDiffSteadyFlowParams(κ, u, grid::OneDGrid) : ConstDiffTimeVaryingFlowParams(κ, u)
+params = steadyflow==true ? ConstDiffSteadyFlowParams(κ, u, grid::OneDGrid, dev) : ConstDiffTimeVaryingFlowParams(κ, u)
 vars = Vars(dev, grid; T=T)
 equation = Equation(dev, params, grid)
 
@@ -215,14 +215,14 @@ end
 
 The constructor for the `params` struct for constant diffusivity problem and steady flow.
 """
-function ConstDiffSteadyFlowParams(κ, κh, nκh, u::Function, grid::OneDGrid)
-    x = ArrayType(dev)([gr.x[i] for i ∈ 1:gr.nx])
+function ConstDiffSteadyFlowParams(κ, κh, nκh, u::Function, grid::OneDGrid, dev)
+    x = ArrayType(dev)([grid.x[i] for i ∈ 1:grid.nx])
    ugrid = u.(x)
    
    return ConstDiffSteadyFlowParams1D(κ, κh, nκh, ugrid)
  end
  
- ConstDiffSteadyFlowParams(κ, u, grid::OneDGrid) = ConstDiffSteadyFlowParams(κ, 0κ, 0, u, grid)
+ ConstDiffSteadyFlowParams(κ, u, grid::OneDGrid, dev) = ConstDiffSteadyFlowParams(κ, 0κ, 0, u, grid, dev)
 
 function ConstDiffSteadyFlowParams(η, κ, κh, nκh, u::Function, v::Function, grid::TwoDGrid)
    x, y = gridpoints(grid)
