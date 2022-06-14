@@ -27,8 +27,6 @@ import GeophysicalFlows.MultiLayerQG
 
 Construct a constant diffusivity problem with steady or time-varying flow in one or two
 dimensions.
-
-One dimension
 """
 noflow(args...) = 0.0 # used as defaults for u, v functions in Problem()
 
@@ -42,17 +40,15 @@ steadyflow = false,
      T = Float64
 )
 
-u = advecting_flow
-grid = OneDGrid(dev, nx, Lx; T=T)
-params = steadyflow==true ? ConstDiffSteadyFlowParams(κ, u, grid::OneDGrid, dev) : ConstDiffTimeVaryingFlowParams(κ, u)
-vars = Vars(dev, grid; T=T)
-equation = Equation(dev, params, grid)
+  u = advecting_flow
+  grid = OneDGrid(dev, nx, Lx; T=T)
+  params = steadyflow==true ? ConstDiffSteadyFlowParams(κ, u, grid::OneDGrid) : ConstDiffTimeVaryingFlowParams(κ, u)
+  vars = Vars(dev, grid; T=T)
+  equation = Equation(dev, params, grid)
 
-return FourierFlows.Problem(equation, stepper, dt, grid, vars, params, dev)
+  return FourierFlows.Problem(equation, stepper, dt, grid, vars, params, dev)
 end
-"""
-Two dimensions
-"""
+
 function Problem(dev, advecting_flow::NamedTuple=(u=noflow, v=noflow);
           nx = 128,
           Lx = 2π,
@@ -215,14 +211,14 @@ end
 
 The constructor for the `params` struct for constant diffusivity problem and steady flow.
 """
-function ConstDiffSteadyFlowParams(κ, κh, nκh, u::Function, grid::OneDGrid, dev)
-    x = ArrayType(dev)([grid.x[i] for i ∈ 1:grid.nx])
+function ConstDiffSteadyFlowParams(κ, κh, nκh, u::Function, grid::OneDGrid)
+   x = gridpoints(grid)
    ugrid = u.(x)
    
    return ConstDiffSteadyFlowParams1D(κ, κh, nκh, ugrid)
  end
  
- ConstDiffSteadyFlowParams(κ, u, grid::OneDGrid, dev) = ConstDiffSteadyFlowParams(κ, 0κ, 0, u, grid, dev)
+ ConstDiffSteadyFlowParams(κ, u, grid::OneDGrid) = ConstDiffSteadyFlowParams(κ, 0κ, 0, u, grid)
 
 function ConstDiffSteadyFlowParams(η, κ, κh, nκh, u::Function, v::Function, grid::TwoDGrid)
    x, y = gridpoints(grid)
