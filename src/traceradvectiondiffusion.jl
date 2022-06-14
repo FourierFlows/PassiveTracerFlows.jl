@@ -22,7 +22,8 @@ import GeophysicalFlows.MultiLayerQG
 # --
 
 """
-    Problem(; parameters...)
+    Problem(dev::DEV, advecting_flow::Function; parameters...)
+    Problem(dev, advecting_flow::NamedTuple=(u=noflow, v=noflow); parameters...)
 
 Construct a constant diffusivity problem with steady or time-varying flow in one or two
 dimensions.
@@ -31,17 +32,17 @@ One dimension
 """
 noflow(args...) = 0.0 # used as defaults for u, v functions in Problem()
 
-function Problem(dev, onedim::Bool;
+function Problem(dev, advecting_flow::Function;
     nx = 128,
     Lx = 2π,
      κ = 0.1,
-     u = noflow,
     dt = 0.01,
 stepper = "RK4",
 steadyflow = false,
      T = Float64
 )
 
+u = advecting_flow
 grid = OneDGrid(dev, nx, Lx; T=T)
 params = steadyflow==true ? ConstDiffSteadyFlowParams(κ, u, grid::OneDGrid, dev) : ConstDiffTimeVaryingFlowParams(κ, u)
 vars = Vars(dev, grid; T=T)
@@ -52,21 +53,20 @@ end
 """
 Two dimensions
 """
-function Problem(dev;
+function Problem(dev, advecting_flow::NamedTuple=(u=noflow, v=noflow);
           nx = 128,
           Lx = 2π,
           ny = nx,
           Ly = Lx,
            κ = 0.1,
            η = κ,
-           u = noflow,
-           v = noflow,
           dt = 0.01,
      stepper = "RK4",
   steadyflow = false,
            T = Float64
   )
   
+  u, v = advecting_flow
   grid = TwoDGrid(dev, nx, Lx, ny, Ly; T=T)
   params = steadyflow==true ? ConstDiffSteadyFlowParams(η, κ, u, v, grid::TwoDGrid) : ConstDiffTimeVaryingFlowParams(η, κ, u, v)
   vars = Vars(dev, grid; T=T)

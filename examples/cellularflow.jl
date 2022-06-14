@@ -54,12 +54,13 @@ mx, my = 1, 1
 
 uvel(x, y) =  ψ₀ * my * cos(mx * x) * sin(my * y)
 vvel(x, y) = -ψ₀ * mx * sin(mx * x) * cos(my * y)
+advecting_flow = (u = uvel, v = vvel)
 nothing # hide
 
 
 # ## Problem setup
 # We initialize a `Problem` by providing a set of keyword arguments.
-prob = TracerAdvectionDiffusion.Problem(dev; nx=n, Lx=L, κ=κ, steadyflow=true, u=uvel, v=vvel,
+prob = TracerAdvectionDiffusion.Problem(dev, advecting_flow; nx=n, Lx=L, κ=κ, steadyflow=true, u=uvel, v=vvel,
                                           dt=dt, stepper=stepper)
 nothing # hide
 
