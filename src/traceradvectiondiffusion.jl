@@ -22,7 +22,7 @@ import GeophysicalFlows.MultiLayerQG
 # --
 
 """
-    Problem(dev::DEV, advecting_flow::Function; parameters...)
+    Problem(dev, advecting_flow::Function; parameters...)
     Problem(dev, advecting_flow::NamedTuple=(u=noflow, v=noflow); parameters...)
 
 Construct a constant diffusivity problem with steady or time-varying flow in one or two
