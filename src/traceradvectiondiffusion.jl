@@ -72,7 +72,7 @@ function Problem(dev, advecting_flow::NamedTuple=(u=noflow, v=noflow);
 end
 
 """
-    Problem(dev, MQGprob; parameters...)
+    Problem(dev, MQGprob::FourierFlows.Problem; parameters...)
 
 Construct a constant diffusivity problem on device `dev` using the flow from a
 `GeophysicalFlows.MultiLayerQG` problem.
