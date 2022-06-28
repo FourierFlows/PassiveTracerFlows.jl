@@ -3,7 +3,9 @@ module TracerAdvectionDiffusion
 export
   Problem,
   set_c!,
-  updatevars!
+  updatevars!,
+  OneDAdvectingFlow,
+  TwoDAdvectingFlow
 
 using
   CUDA,
@@ -18,38 +20,91 @@ import LinearAlgebra: mul!, ldiv!
 import GeophysicalFlows.MultiLayerQG
 
 # --
+# AdvectingFlows
+# --
+
+"Abstract super type for an advecting flow."
+abstract type AbstractAdvectingFlow end
+
+"""
+    struct  OneDAdvectingFlow <: AbstractAdvectingFlow
+
+A struct containing the advecting flow for a one dimensional `TracerAdvectionDiffusion.Problem`.
+Included is
+
+$(TYPEDFIELDS)
+"""
+struct OneDAdvectingFlow <: AbstractAdvectingFlow
+    "Function for the x-component of the advecting flow"
+             u :: Function
+    "Whether or not the flow is steady (i.e not time dependent)"
+    steadyflow :: Bool
+end
+
+"""
+    OneDAdvectingFlow(; u=noflow, steadyflow=false)
+
+Constructor for the `OneDAdvectingFlow`. The default function for the advecting flow component is `noflow`
+and `steadyflow=false`.    
+"""
+OneDAdvectingFlow(; u=noflow, steadyflow=false) = OneDAdvectingFlow(u, steadyflow)
+
+"""
+    struct  TwoeDAdvectingFlow <: AbstractAdvectingFlow
+
+A struct containing the advecting flow for a two dimensional `TracerAdvectionDiffusion.Problem`.
+Included is
+
+$(TYPEDFIELDS)
+"""
+struct TwoDAdvectingFlow <: AbstractAdvectingFlow
+    "Function for the x-component of the advecting flow"
+             u :: Function
+    "Function for the y-component of the advecting flow"
+             v :: Function
+    "Whether or not the flow is steady (i.e. not time dependent)"
+    steadyflow :: Bool
+end
+
+"""
+    TwoDAdvectingFlow(; u=noflow, v=noflow, steadyflow=false)
+
+Constructor for the `TwoDAdvectingFlow`. The default function for the advecting flow components is `noflow`
+and `steadyflow=false`.    
+"""
+TwoDAdvectingFlow(; u=noflow, v=noflow, steadyflow=false) = TwoDAdvectingFlow(u, v, steadyflow)
+
+# --
 # Problems
 # --
 
 """
-    Problem(dev, advecting_flow::Function; parameters...)
-    Problem(dev, advecting_flow::NamedTuple=(u=noflow, v=noflow); parameters...)
+    Problem(dev, advecting_flow::OneDAdvectingFlow; parameters...)
+    Problem(dev, advecting_flow::TwoDAdvectingFlow; parameters...)
 
 Construct a constant diffusivity problem with steady or time-varying flow in one or two
 dimensions.
 """
 noflow(args...) = 0.0 # used as defaults for u, v functions in Problem()
 
-function Problem(dev, advecting_flow::Function;
-    nx = 128,
-    Lx = 2π,
-     κ = 0.1,
-    dt = 0.01,
+function Problem(dev, advecting_flow::OneDAdvectingFlow;
+     nx = 128,
+     Lx = 2π,
+      κ = 0.1,
+     dt = 0.01,
 stepper = "RK4",
-steadyflow = false,
-     T = Float64
+      T = Float64
 )
 
-  u = advecting_flow
   grid = OneDGrid(dev, nx, Lx; T=T)
-  params = steadyflow==true ? ConstDiffSteadyFlowParams(κ, u, grid::OneDGrid) : ConstDiffTimeVaryingFlowParams(κ, u)
+  params = advecting_flow.steadyflow==true ? ConstDiffSteadyFlowParams(κ, advecting_flow.u, grid::OneDGrid) : ConstDiffTimeVaryingFlowParams(κ, advecting_flow.u)
   vars = Vars(dev, grid; T=T)
   equation = Equation(dev, params, grid)
 
   return FourierFlows.Problem(equation, stepper, dt, grid, vars, params, dev)
 end
 
-function Problem(dev, advecting_flow::NamedTuple=(u=noflow, v=noflow);
+function Problem(dev, advecting_flow::TwoDAdvectingFlow;
           nx = 128,
           Lx = 2π,
           ny = nx,
@@ -58,13 +113,11 @@ function Problem(dev, advecting_flow::NamedTuple=(u=noflow, v=noflow);
            η = κ,
           dt = 0.01,
      stepper = "RK4",
-  steadyflow = false,
            T = Float64
   )
   
-  u, v = advecting_flow
   grid = TwoDGrid(dev, nx, Lx, ny, Ly; T=T)
-  params = steadyflow==true ? ConstDiffSteadyFlowParams(η, κ, u, v, grid::TwoDGrid) : ConstDiffTimeVaryingFlowParams(η, κ, u, v)
+  params = advecting_flow.steadyflow==true ? ConstDiffSteadyFlowParams(η, κ, advecting_flow.u, advecting_flow.v, grid::TwoDGrid) : ConstDiffTimeVaryingFlowParams(η, κ, advecting_flow.u, advecting_flow.v)
   vars = Vars(dev, grid; T=T)
   equation = Equation(dev, params, grid)
 

@@ -38,12 +38,13 @@ L = 2π        # domain size
 nothing # hide
 
 # ## Flow
-# We set a constant background flow. Note this is done using a single `Function` in one dimension.
-advecting_flow = uvel(x) = 0.05
+# We set a constant background flow and pass this to `OneDAdvectingFlow` with `steadyflow = true` to indicate the flow is not time dependent.
+uvel(x) = 0.05
+advecting_flow = OneDAdvectingFlow(; u = uvel, steadyflow = true)
 
 # ## Problem setup
 # We initialize a `Problem` by providing a set of keyword arguments.
-prob = TracerAdvectionDiffusion.Problem(dev, advecting_flow; nx=n, Lx=L, κ=κ, steadyflow=true,
+prob = TracerAdvectionDiffusion.Problem(dev, advecting_flow; nx=n, Lx=L, κ=κ,
                                           dt=dt, stepper=stepper)
 nothing # hide
 
