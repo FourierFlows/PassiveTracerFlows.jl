@@ -45,7 +45,7 @@ nothing # hide
 # ## Set up cellular flow
 # We create a two-dimensional grid to construct the cellular flow. Our cellular flow is derived
 # from a streamfunction ``ψ(x, y) = ψ₀ \cos(x) \cos(y)`` as ``(u, v) = (-∂_y ψ, ∂_x ψ)``.
-# The celluar flow is then passed into the `TwoDAdvectingFlow` constructor with `steadyflow = true`
+# The cellular flow is then passed into the `TwoDAdvectingFlow` constructor with `steadyflow = true`
 # to indicate that the flow is not time dependent.
 grid = TwoDGrid(n, L)
 
