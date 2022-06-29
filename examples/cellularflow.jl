@@ -45,6 +45,8 @@ nothing # hide
 # ## Set up cellular flow
 # We create a two-dimensional grid to construct the cellular flow. Our cellular flow is derived
 # from a streamfunction ``ψ(x, y) = ψ₀ \cos(x) \cos(y)`` as ``(u, v) = (-∂_y ψ, ∂_x ψ)``.
+# The cellular flow is then passed into the `TwoDAdvectingFlow` constructor with `steadyflow = true`
+# to indicate that the flow is not time dependent.
 grid = TwoDGrid(n, L)
 
 ψ₀ = 0.2
@@ -54,13 +56,13 @@ mx, my = 1, 1
 
 uvel(x, y) =  ψ₀ * my * cos(mx * x) * sin(my * y)
 vvel(x, y) = -ψ₀ * mx * sin(mx * x) * cos(my * y)
+advecting_flow = TwoDAdvectingFlow(; u = uvel, v = vvel, steadyflow = true)
 nothing # hide
 
 
 # ## Problem setup
 # We initialize a `Problem` by providing a set of keyword arguments.
-prob = TracerAdvectionDiffusion.Problem(dev; nx=n, Lx=L, κ=κ, steadyflow=true, u=uvel, v=vvel,
-                                          dt=dt, stepper=stepper)
+prob = TracerAdvectionDiffusion.Problem(dev, advecting_flow; nx=n, Lx=L, κ, dt, stepper)
 nothing # hide
 
 # and define some shortcuts

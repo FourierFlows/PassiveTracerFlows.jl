@@ -1,4 +1,75 @@
 """
+    test_constvel1D(; kwargs...)
+
+Advect a gaussian concentration `c0(x, t)` with a constant velocity flow
+`u(x) = uvel` and compare the final state with
+`cfinal = c0(x - uvel * tfinal)`.
+"""
+function test_constvel1D(stepper, dt, nsteps, dev::Device=CPU())
+
+  nx, Lx = 128, 2π
+  uvel = 0.05
+  u(x) = uvel
+  advecting_flow = OneDAdvectingFlow(; u)
+
+  prob = TracerAdvectionDiffusion.Problem(dev, advecting_flow; nx, Lx, κ=0.0, dt, stepper)
+  sol, cl, vs, pr, gr = prob.sol, prob.clock, prob.vars, prob.params, prob.grid
+  x = gridpoints(gr)
+
+  σ = 0.1
+  c0ampl = 0.1
+  c0func(x) = c0ampl * exp(-x^2 / 2σ^2)
+
+  c0 = c0func.(x)
+  tfinal = nsteps * dt
+  cfinal = @. c0func(x - uvel * tfinal)
+
+  TracerAdvectionDiffusion.set_c!(prob, c0)
+
+  stepforward!(prob, nsteps)
+  TracerAdvectionDiffusion.updatevars!(prob)
+
+  return isapprox(cfinal, vs.c, rtol = gr.nx*nsteps*1e-12)
+end
+
+"""
+    test_timedependenttvel1D(; kwargs...)
+
+Advect a gaussian concentration `c0(x, t)` with a time-varying velocity flow
+`u(x, t) = uvel * sign(-t + tfinal/2)` and compares the final
+state with `cfinal = c0(x - uvel * tfinal)`.
+"""
+function test_timedependentvel1D(stepper, dt, tfinal, dev::Device=CPU(); uvel = 0.05)
+  
+  nx, Lx = 128, 2π
+  nsteps = round(Int, tfinal/dt)
+  
+  if !isapprox(tfinal, nsteps*dt, rtol=rtol_traceradvectiondiffusion)
+    error("tfinal is not multiple of dt")
+  end
+  
+  u(x, t) = uvel * t + uvel * dt/2
+  advecting_flow = OneDAdvectingFlow(; u, steadyflow = false)
+
+  prob = TracerAdvectionDiffusion.Problem(dev, advecting_flow; nx, Lx, κ=0.0, dt, stepper)
+  sol, cl, vs, pr, gr = prob.sol, prob.clock, prob.vars, prob.params, prob.grid
+  x = gridpoints(gr)
+
+  σ = 0.2
+  c0func(x) = 0.1 * exp(-x^2 / 2σ^2)
+  c0 = @. c0func(x)
+  tfinal = nsteps * dt
+  cfinal = @. c0func(x -  0.5uvel * tfinal^2)
+
+  TracerAdvectionDiffusion.set_c!(prob, c0)
+
+  stepforward!(prob, nsteps)
+  TracerAdvectionDiffusion.updatevars!(prob)
+
+  return isapprox(cfinal, vs.c, rtol = gr.nx*nsteps*1e-12)
+end
+
+"""
     test_constvel(; kwargs...)
 
 Advect a gaussian concentration `c0(x, y, t)` with a constant velocity flow
@@ -11,15 +82,16 @@ function test_constvel(stepper, dt, nsteps, dev::Device=CPU())
   uvel, vvel = 0.2, 0.1
   u(x, y) = uvel
   v(x, y) = vvel
+  advecting_flow = TwoDAdvectingFlow(; u, v)
 
-  prob = TracerAdvectionDiffusion.Problem(dev; nx, Lx, κ=0.0, u, v, dt, stepper, steadyflow=true)
+  prob = TracerAdvectionDiffusion.Problem(dev, advecting_flow; nx, Lx, κ=0.0, dt, stepper)
   sol, cl, vs, pr, gr = prob.sol, prob.clock, prob.vars, prob.params, prob.grid
 
   x, y = gridpoints(gr)
 
   σ = 0.1
   c0ampl = 0.1
-  c0func(x, y) = c0ampl * exp(-(x^2 + y^2) / (2σ^2))
+  c0func(x, y) = c0ampl * exp(-(x^2 + y^2) / 2σ^2)
 
   c0 = c0func.(x, y)
   tfinal = nsteps * dt
@@ -52,13 +124,14 @@ function test_timedependentvel(stepper, dt, tfinal, dev::Device=CPU(); uvel = 0.
   
   u(x, y, t) = uvel
   v(x, y, t) = αv * t + αv * dt/2
+  advecting_flow = TwoDAdvectingFlow(; u, v, steadyflow = false)
 
-  prob = TracerAdvectionDiffusion.Problem(dev; nx, Lx, κ=0.0, u, v, dt, stepper)
+  prob = TracerAdvectionDiffusion.Problem(dev, advecting_flow; nx, Lx, κ=0.0, dt, stepper)
   sol, cl, vs, pr, gr = prob.sol, prob.clock, prob.vars, prob.params, prob.grid
   x, y = gridpoints(gr)
 
   σ = 0.2
-  c0func(x, y) = 0.1 * exp(-(x^2 + y^2) / (2σ^2))
+  c0func(x, y) = 0.1 * exp(-(x^2 + y^2) / 2σ^2)
 
   c0 = @. c0func(x, y)
   tfinal = nsteps * dt
@@ -72,6 +145,45 @@ function test_timedependentvel(stepper, dt, tfinal, dev::Device=CPU(); uvel = 0.
   return isapprox(cfinal, vs.c, rtol = gr.nx*gr.ny*nsteps*1e-12)
 end
 
+"""
+    test_diffusion1D(; kwargs...)
+
+Diffuses a gaussian concentration c0(x, t) and compares the final state with
+the analytic solution of the heat equation, cfinal
+"""
+function test_diffusion1D(stepper, dt, tfinal, dev::Device=CPU(); steadyflow = true)
+
+  nx = 128
+  Lx = 2π
+   κ = 0.01
+  nsteps = round(Int, tfinal/dt)
+
+  if !isapprox(tfinal, nsteps*dt, rtol=rtol_traceradvectiondiffusion)
+    error("tfinal is not multiple of dt")
+  end
+
+  #advecting_flow = steadyflow==true ? u(x) = 0.0 : ut(x, t) = 0.0
+  advecting_flow = OneDAdvectingFlow(; steadyflow)
+
+  prob = TracerAdvectionDiffusion.Problem(dev, advecting_flow; nx, Lx, κ, dt, stepper)
+  sol, cl, vs, pr, gr = prob.sol, prob.clock, prob.vars, prob.params, prob.grid
+  x = gridpoints(gr)
+  
+  c0ampl, σ₀ = 0.1, 0.1
+  σ(t) = sqrt(2κ * t + σ₀)
+  c0func(x, t) = (c0ampl / σ(t)) * exp(-x^2 / 2σ(t)^2)
+
+  c0 = @. c0func(x, 0)
+  tfinal = nsteps * dt
+  cfinal = @. c0func(x, tfinal)
+
+  TracerAdvectionDiffusion.set_c!(prob, c0)
+
+  stepforward!(prob, nsteps)
+  TracerAdvectionDiffusion.updatevars!(prob)
+
+  return isapprox(cfinal, vs.c, rtol=gr.nx*nsteps*1e-12)
+end
 
 """
     test_diffusion(; kwargs...)
@@ -90,18 +202,18 @@ function test_diffusion(stepper, dt, tfinal, dev::Device=CPU(); steadyflow = tru
     error("tfinal is not multiple of dt")
   end
 
-  prob = TracerAdvectionDiffusion.Problem(dev; steadyflow=steadyflow, nx=nx,
-    Lx=Lx, κ=κ, dt=dt, stepper=stepper)
+  advecting_flow = TwoDAdvectingFlow(; steadyflow)
+  prob = TracerAdvectionDiffusion.Problem(dev, advecting_flow; nx, Lx, κ, dt, stepper)
   sol, cl, vs, pr, gr = prob.sol, prob.clock, prob.vars, prob.params, prob.grid
   x, y = gridpoints(gr)
 
   c0ampl, σ = 0.1, 0.1
-  c0func(x, y) = c0ampl * exp(-(x^2 + y^2) / (2σ^2))
+  c0func(x, y) = c0ampl * exp(-(x^2 + y^2) / 2σ^2)
 
   c0 = @. c0func(x, y)
   tfinal = nsteps * dt
   σt = sqrt(2κ * tfinal + σ^2)
-  cfinal = @. c0ampl * (σ^2 / σt^2) * exp(-(x^2 + y^2) / (2σt^2))
+  cfinal = @. c0ampl * (σ^2 / σt^2) * exp(-(x^2 + y^2) / 2σt^2)
 
   TracerAdvectionDiffusion.set_c!(prob, c0)
 
@@ -113,7 +225,6 @@ end
 
 function test_diffusion_multilayerqg(stepper, dt, tfinal, dev::Device=CPU())
   # Set up MQGprob to generate zero flow and diffuse concentration field
-
   nx = 128
   Lx = 2π
 
@@ -150,11 +261,11 @@ function test_diffusion_multilayerqg(stepper, dt, tfinal, dev::Device=CPU())
   x, y = gridpoints(gr)
 
   c0ampl, σ = 0.1, 0.1
-  c0func(x, y) = c0ampl * exp(-(x^2 + y^2) / (2σ^2))
+  c0func(x, y) = c0ampl * exp(-(x^2 + y^2) / 2σ^2)
   c0 = @. c0func(x, y)
   tfinal = nsteps * dt
   σt = sqrt(2κ * tfinal + σ^2)
-  cfinal = @. c0ampl * (σ^2 / σt^2) * exp(-(x^2 + y^2) / (2σt^2))
+  cfinal = @. c0ampl * (σ^2 / σt^2) * exp(-(x^2 + y^2) / 2σt^2)
 
   TracerAdvectionDiffusion.set_c!(ADprob, c0)
 
@@ -191,20 +302,22 @@ function test_hyperdiffusion(stepper, dt, tfinal, dev::Device=CPU(); steadyflow 
   gr = TwoDGrid(dev, nx, Lx)
   x, y = gridpoints(gr)
 
-  u, v = zero(x), zero(x) #0*x, 0*x
+  #u, v = zero(x), zero(x) #0*x, 0*x
+  u(x, y) = 0.0
+  v(x, y) = 0.0
 
   vs = TracerAdvectionDiffusion.Vars(dev, gr)
-  pr = TracerAdvectionDiffusion.ConstDiffSteadyFlowParams(η, κ, κh, nκh, u, v)
+  pr = TracerAdvectionDiffusion.ConstDiffSteadyFlowParams(η, κ, κh, nκh, u, v, gr)
   eq = TracerAdvectionDiffusion.Equation(dev, pr, gr)
   prob = FourierFlows.Problem(eq, stepper, dt, gr, vs, pr, dev)
 
   c0ampl, σ = 0.1, 0.1
-  c0func(x, y) = c0ampl * exp(-(x^2 + y^2) / (2σ^2))
+  c0func(x, y) = c0ampl * exp(-(x^2 + y^2) / 2σ^2)
 
   c0 = @. c0func(x, y)
   tfinal = nsteps * dt
   σt = sqrt(2κh * tfinal + σ^2)
-  cfinal = @. c0ampl * σ^2 / σt^2 * exp(-(x^2 + y^2) / (2σt^2))
+  cfinal = @. c0ampl * σ^2 / σt^2 * exp(-(x^2 + y^2) / 2σt^2)
 
   TracerAdvectionDiffusion.set_c!(prob, c0)
 

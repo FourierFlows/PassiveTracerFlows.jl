@@ -49,6 +49,6 @@ See `examples/` for example scripts.
 
 The code is citable via [zenodo](https://zenodo.org). Please cite as:
 
-> Navid C. Constantinou. and Gregory L. Wagner (2022). FourierFlows/PassiveTracerFlows.jl: PassiveTracerFlows v0.6.1 (Version v0.6.1). Zenodo.  [https://doi.org/10.5281/zenodo.2535983](https://doi.org/10.5281/zenodo.2535983)
+> Navid C. Constantinou, Josef Bisits, and Gregory L. Wagner (2022). FourierFlows/PassiveTracerFlows.jl: PassiveTracerFlows v0.7.0 (Version v0.7.0). Zenodo. [https://doi.org/10.5281/zenodo.2535983](https://doi.org/10.5281/zenodo.2535983)
 
 [FourierFlows.jl]: https://github.com/FourierFlows/FourierFlows.jl
