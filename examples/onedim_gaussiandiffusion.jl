@@ -27,20 +27,20 @@ nothing # hide
       n = 128            # 2D resolution = n²
 stepper = "RK4"          # timestepper
      dt = 0.02           # timestep
- nsteps = 5000            # total number of time-steps
+ nsteps = 5000           # total number of time-steps
 nothing # hide
 
 
 # ## Physical parameters
 
-L = 2π        # domain size
+L = 2π       # domain size
 κ = 0.01     # diffusivity
 nothing # hide
 
 # ## Flow
 # We set a constant background flow and pass this to `OneDAdvectingFlow` with `steadyflow = true` to indicate the flow is not time dependent.
-uvel(x) = 0.05
-advecting_flow = OneDAdvectingFlow(; u = uvel, steadyflow = true)
+u(x) = 0.05
+advecting_flow = OneDAdvectingFlow(; u, steadyflow = true)
 
 # ## Problem setup
 # We initialize a `Problem` by providing a set of keyword arguments.
@@ -52,33 +52,35 @@ sol, clock, vars, params, grid = prob.sol, prob.clock, prob.vars, prob.params, p
 x = grid.x
 
 # ## Initial condition
-# We will advect-diffuse a concentration field that has an initial concentration set to Gaussian.
-gaussian(x, σ) = exp(-(x^2) / (2σ^2))
+# We advect-diffuse a concentration field that has an initial concentration set to Gaussian.
+gaussian(x, σ) = exp(-x^2 / 2σ^2)
 
 amplitude, spread = 1, 0.15
-c₀ = [amplitude * gaussian(x[i], spread) for i=1:grid.nx]
+c₀ = [amplitude * gaussian(x[i], spread) for i in 1:grid.nx]
 
 TracerAdvectionDiffusion.set_c!(prob, c₀)
 nothing #hide
 
 # ## Saving output
-# We will create the saved output using the `Output` function from `FourierFlows.jl` then
+# We create the saved output using the `Output` function from `FourierFlows.jl` then
 # save the concentration field using the `get_concentration` function every 50 timesteps.
 function get_concentration(prob)
-    ldiv!(prob.vars.c, grid.rfftplan,  deepcopy(prob.sol))
-  
-    return prob.vars.c
+  ldiv!(prob.vars.c, prob.grid.rfftplan, deepcopy(prob.sol))
+
+  return prob.vars.c
 end
   
 output = Output(prob, "advection-diffusion1D.jld2",
                 (:concentration, get_concentration))
 
-# This saves information that we will use for plotting later on
+# By calling `saveproblem(output)` we save information that we will use for plotting later on.
 saveproblem(output)
 
 # ## Stepping the problem forward
-# Now we step the problem forward saving at every 50 timesteps.
+# Now we step the problem forward and save output every 50 timesteps.
+
 save_frequency = 50 # frequency at which output is saved
+
 startwalltime = time()
 while clock.step <= nsteps
   if clock.step % save_frequency == 0
@@ -93,14 +95,13 @@ while clock.step <= nsteps
 end
 
 # ## Visualising the output
-# From the saved data we create a timeseries of the concentration field
+# We load the `.jld2` file and create a timeseries of the concentration field
 file = jldopen(output.path)
 
 iterations = parse.(Int, keys(file["snapshots/t"]))
+
 t = [file["snapshots/t/$i"] for i ∈ iterations]
-
 c = [file["snapshots/concentration/$i"] for i ∈ iterations]
-
 nothing # hide
 
 # Set up the plotting arguments and look at the initial concentration.
@@ -114,11 +115,12 @@ plot_args = (xlabel = "x",
              legend = :false,
              color = :balance)
 
-p = plot(x, Array(c[1]), title = "concentration, t = " * @sprintf("%.2f", t[1]); plot_args...)
-
+p = plot(x, Array(c[1]);
+         title = "concentration, t = " * @sprintf("%.2f", t[1]),
+         plot_args...)
 nothing # hide
 
-# Create a movie of the tracer concentration being advected-diffused.
+# Now, we create a movie of the tracer concentration being advected and  diffused.
 
 anim = @animate for i ∈ 1:length(t)
   p[1][:title] = "concentration, t = " * @sprintf("%.2f", t[i])
