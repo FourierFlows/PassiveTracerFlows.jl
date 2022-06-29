@@ -10,7 +10,7 @@ function test_constvel1D(stepper, dt, nsteps, dev::Device=CPU())
   nx, Lx = 128, 2π
   uvel = 0.05
   u(x) = uvel
-  advecting_flow = OneDAdvectingFlow(; u, steadyflow = true)
+  advecting_flow = OneDAdvectingFlow(; u)
 
   prob = TracerAdvectionDiffusion.Problem(dev, advecting_flow; nx, Lx, κ=0.0, dt, stepper)
   sol, cl, vs, pr, gr = prob.sol, prob.clock, prob.vars, prob.params, prob.grid
@@ -49,7 +49,7 @@ function test_timedependentvel1D(stepper, dt, tfinal, dev::Device=CPU(); uvel = 
   end
   
   u(x, t) = uvel * t + uvel * dt/2
-  advecting_flow = OneDAdvectingFlow(; u)
+  advecting_flow = OneDAdvectingFlow(; u, steadyflow = false)
 
   prob = TracerAdvectionDiffusion.Problem(dev, advecting_flow; nx, Lx, κ=0.0, dt, stepper)
   sol, cl, vs, pr, gr = prob.sol, prob.clock, prob.vars, prob.params, prob.grid
@@ -82,7 +82,7 @@ function test_constvel(stepper, dt, nsteps, dev::Device=CPU())
   uvel, vvel = 0.2, 0.1
   u(x, y) = uvel
   v(x, y) = vvel
-  advecting_flow = TwoDAdvectingFlow(; u, v, steadyflow = true)
+  advecting_flow = TwoDAdvectingFlow(; u, v)
 
   prob = TracerAdvectionDiffusion.Problem(dev, advecting_flow; nx, Lx, κ=0.0, dt, stepper)
   sol, cl, vs, pr, gr = prob.sol, prob.clock, prob.vars, prob.params, prob.grid
@@ -124,7 +124,7 @@ function test_timedependentvel(stepper, dt, tfinal, dev::Device=CPU(); uvel = 0.
   
   u(x, y, t) = uvel
   v(x, y, t) = αv * t + αv * dt/2
-  advecting_flow = TwoDAdvectingFlow(; u, v)
+  advecting_flow = TwoDAdvectingFlow(; u, v, steadyflow = false)
 
   prob = TracerAdvectionDiffusion.Problem(dev, advecting_flow; nx, Lx, κ=0.0, dt, stepper)
   sol, cl, vs, pr, gr = prob.sol, prob.clock, prob.vars, prob.params, prob.grid

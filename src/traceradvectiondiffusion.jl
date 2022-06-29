@@ -44,12 +44,12 @@ end
 noflow(args...) = 0.0 # used as defaults for u, v functions in AdvectingFlow constructors
 
 """
-    OneDAdvectingFlow(; u=noflow, steadyflow=false)
+    OneDAdvectingFlow(; u=noflow, steadyflow=true)
 
-Return a `OneDAdvectingFlow`. By default, there is no advecting flow `u = noflow`
-and `steadyflow = false`.    
+Return a `OneDAdvectingFlow`. By default, there is no advecting flow `u=noflow` hence 
+`steadyflow=true`.    
 """
-OneDAdvectingFlow(; u=noflow, steadyflow=false) = OneDAdvectingFlow(u, steadyflow)
+OneDAdvectingFlow(; u=noflow, steadyflow=true) = OneDAdvectingFlow(u, steadyflow)
 
 """
     struct TwoDAdvectingFlow <: AbstractAdvectingFlow
@@ -69,12 +69,12 @@ struct TwoDAdvectingFlow <: AbstractAdvectingFlow
 end
 
 """
-    TwoDAdvectingFlow(; u=noflow, v=noflow, steadyflow=false)
+    TwoDAdvectingFlow(; u=noflow, v=noflow, steadyflow=true)
 
 Constructor for the `TwoDAdvectingFlow`. The default function for the advecting flow components is `noflow`
-and `steadyflow=false`.    
+hence `steadyflow=true`.    
 """
-TwoDAdvectingFlow(; u=noflow, v=noflow, steadyflow=false) = TwoDAdvectingFlow(u, v, steadyflow)
+TwoDAdvectingFlow(; u=noflow, v=noflow, steadyflow=true) = TwoDAdvectingFlow(u, v, steadyflow)
 
 # --
 # Problems
