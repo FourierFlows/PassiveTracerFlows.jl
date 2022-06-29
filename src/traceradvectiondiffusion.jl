@@ -27,7 +27,7 @@ import GeophysicalFlows.MultiLayerQG
 abstract type AbstractAdvectingFlow end
 
 """
-    struct  OneDAdvectingFlow <: AbstractAdvectingFlow
+    struct OneDAdvectingFlow <: AbstractAdvectingFlow
 
 A struct containing the advecting flow for a one dimensional `TracerAdvectionDiffusion.Problem`.
 Included is
@@ -37,20 +37,22 @@ $(TYPEDFIELDS)
 struct OneDAdvectingFlow <: AbstractAdvectingFlow
     "Function for the x-component of the advecting flow"
              u :: Function
-    "Whether or not the flow is steady (i.e not time dependent)"
+    "Whether or not the flow is steady (i.e., not time dependent)"
     steadyflow :: Bool
 end
+
+noflow(args...) = 0.0 # used as defaults for u, v functions in AdvectingFlow constructors
 
 """
     OneDAdvectingFlow(; u=noflow, steadyflow=false)
 
-Constructor for the `OneDAdvectingFlow`. The default function for the advecting flow component is `noflow`
-and `steadyflow=false`.    
+Return a `OneDAdvectingFlow`. By default, there is no advecting flow `u = noflow`
+and `steadyflow = false`.    
 """
 OneDAdvectingFlow(; u=noflow, steadyflow=false) = OneDAdvectingFlow(u, steadyflow)
 
 """
-    struct  TwoeDAdvectingFlow <: AbstractAdvectingFlow
+    struct TwoDAdvectingFlow <: AbstractAdvectingFlow
 
 A struct containing the advecting flow for a two dimensional `TracerAdvectionDiffusion.Problem`.
 Included is
@@ -62,7 +64,7 @@ struct TwoDAdvectingFlow <: AbstractAdvectingFlow
              u :: Function
     "Function for the y-component of the advecting flow"
              v :: Function
-    "Whether or not the flow is steady (i.e. not time dependent)"
+    "Whether or not the flow is steady (i.e., not time dependent)"
     steadyflow :: Bool
 end
 
@@ -79,46 +81,55 @@ TwoDAdvectingFlow(; u=noflow, v=noflow, steadyflow=false) = TwoDAdvectingFlow(u,
 # --
 
 """
-    Problem(dev, advecting_flow::OneDAdvectingFlow; parameters...)
-    Problem(dev, advecting_flow::TwoDAdvectingFlow; parameters...)
+    Problem(dev, advecting_flow; parameters...)
 
-Construct a constant diffusivity problem with steady or time-varying flow in one or two
-dimensions.
+Construct a constant diffusivity problem with steady or time-varying flow. The dimensionality
+of the problem is inferred from the `advecting_flow`:
+* `advecting_flow::OneDAdvectingFlow` for 1D advection-diffusion problem,
+* `advecting_flow::TwoDAdvectingFlow` for 2D advection-diffusion problem.
 """
-noflow(args...) = 0.0 # used as defaults for u, v functions in Problem()
-
 function Problem(dev, advecting_flow::OneDAdvectingFlow;
-     nx = 128,
-     Lx = 2π,
-      κ = 0.1,
-     dt = 0.01,
-stepper = "RK4",
-      T = Float64
-)
+                     nx = 128,
+                     Lx = 2π,
+                      κ = 0.1,
+                     dt = 0.01,
+                stepper = "RK4",
+                      T = Float64
+                )
 
-  grid = OneDGrid(dev, nx, Lx; T=T)
-  params = advecting_flow.steadyflow==true ? ConstDiffSteadyFlowParams(κ, advecting_flow.u, grid::OneDGrid) : ConstDiffTimeVaryingFlowParams(κ, advecting_flow.u)
-  vars = Vars(dev, grid; T=T)
+  grid = OneDGrid(dev, nx, Lx; T)
+  
+  params = advecting_flow.steadyflow==true ?
+           ConstDiffSteadyFlowParams(κ, advecting_flow.u, grid::OneDGrid) :
+           ConstDiffTimeVaryingFlowParams(κ, advecting_flow.u)
+
+  vars = Vars(dev, grid; T)
+
   equation = Equation(dev, params, grid)
 
   return FourierFlows.Problem(equation, stepper, dt, grid, vars, params, dev)
 end
 
 function Problem(dev, advecting_flow::TwoDAdvectingFlow;
-          nx = 128,
-          Lx = 2π,
-          ny = nx,
-          Ly = Lx,
-           κ = 0.1,
-           η = κ,
-          dt = 0.01,
-     stepper = "RK4",
-           T = Float64
-  )
+                     nx = 128,
+                     Lx = 2π,
+                     ny = nx,
+                     Ly = Lx,
+                      κ = 0.1,
+                      η = κ,
+                     dt = 0.01,
+                stepper = "RK4",
+                      T = Float64
+                )
   
-  grid = TwoDGrid(dev, nx, Lx, ny, Ly; T=T)
-  params = advecting_flow.steadyflow==true ? ConstDiffSteadyFlowParams(η, κ, advecting_flow.u, advecting_flow.v, grid::TwoDGrid) : ConstDiffTimeVaryingFlowParams(η, κ, advecting_flow.u, advecting_flow.v)
-  vars = Vars(dev, grid; T=T)
+  grid = TwoDGrid(dev, nx, Lx, ny, Ly; T)
+
+  params = advecting_flow.steadyflow==true ?
+           ConstDiffSteadyFlowParams(η, κ, advecting_flow.u, advecting_flow.v, grid::TwoDGrid) :
+           ConstDiffTimeVaryingFlowParams(η, κ, advecting_flow.u, advecting_flow.v)
+
+  vars = Vars(dev, grid; T)
+
   equation = Equation(dev, params, grid)
 
   return FourierFlows.Problem(equation, stepper, dt, grid, vars, params, dev)
@@ -372,10 +383,11 @@ end
 # --
 # Vars
 # --
-"""
-    struct Vars{Aphys, Atrans} <: AbstractVars
 
-The variables for TracerAdvectionDiffussion problems in one dimension.
+"""
+    struct Vars1D{Aphys, Atrans} <: AbstractVars
+
+The variables for a 1D TracerAdvectionDiffussion problem.
 
 $(FIELDS)
 """
@@ -393,7 +405,7 @@ end
 """
     struct Vars2D{Aphys, Atrans} <: AbstractVars
 
-The variables for TracerAdvectionDiffussion problems in two dimensions.
+The variables for a 2D TracerAdvectionDiffussion problem.
 
 $(FIELDS)
 """
