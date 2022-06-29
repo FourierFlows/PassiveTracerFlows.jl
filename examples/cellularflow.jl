@@ -62,8 +62,7 @@ nothing # hide
 
 # ## Problem setup
 # We initialize a `Problem` by providing a set of keyword arguments.
-prob = TracerAdvectionDiffusion.Problem(dev, advecting_flow; nx=n, Lx=L, κ=κ,
-                                          dt=dt, stepper=stepper)
+prob = TracerAdvectionDiffusion.Problem(dev, advecting_flow; nx=n, Lx=L, κ, dt, stepper)
 nothing # hide
 
 # and define some shortcuts
