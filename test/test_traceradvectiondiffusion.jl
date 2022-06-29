@@ -49,7 +49,7 @@ function test_timedependentvel1D(stepper, dt, tfinal, dev::Device=CPU(); uvel = 
   end
   
   u(x, t) = uvel * t + uvel * dt/2
-  advecting_flow = OneDAdvectingFlow(; u = u)
+  advecting_flow = OneDAdvectingFlow(; u = u, steadyflow = false)
 
   prob = TracerAdvectionDiffusion.Problem(dev, advecting_flow; nx, Lx, κ=0.0, dt, stepper)
   sol, cl, vs, pr, gr = prob.sol, prob.clock, prob.vars, prob.params, prob.grid
@@ -125,7 +125,7 @@ function test_timedependentvel(stepper, dt, tfinal, dev::Device=CPU(); uvel = 0.
   
   u(x, y, t) = uvel
   v(x, y, t) = αv * t + αv * dt/2
-  advecting_flow = TwoDAdvectingFlow(; u = u, v = v)
+  advecting_flow = TwoDAdvectingFlow(; u = u, v = v, steadyflow = false)
 
   prob = TracerAdvectionDiffusion.Problem(dev, advecting_flow; nx, Lx, κ=0.0, dt, stepper)
   sol, cl, vs, pr, gr = prob.sol, prob.clock, prob.vars, prob.params, prob.grid
@@ -163,7 +163,6 @@ function test_diffusion1D(stepper, dt, tfinal, dev::Device=CPU(); steadyflow = t
     error("tfinal is not multiple of dt")
   end
 
-  #advecting_flow = steadyflow==true ? u(x) = 0.0 : ut(x, t) = 0.0
   advecting_flow = OneDAdvectingFlow(; steadyflow = steadyflow)
 
   prob = TracerAdvectionDiffusion.Problem(dev, advecting_flow; nx=nx,
