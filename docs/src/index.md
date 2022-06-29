@@ -19,7 +19,7 @@ advection-diffusion problems on periodic domains.
 
 ## Developers
 
-PassiveTracerFlows is currently being developed by [Navid C. Constantinou](http://www.navidconstantinou.com) and [Gregory L. Wagner](https://glwagner.github.io).
+PassiveTracerFlows is currently being developed by [Navid C. Constantinou](http://www.navidconstantinou.com), [Josef Bisits](https://au.linkedin.com/in/josef-bisits-066253123), and [Gregory L. Wagner](https://glwagner.github.io).
 
 
 ## Cite

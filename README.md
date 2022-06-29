@@ -42,7 +42,7 @@ See `examples/` for example scripts.
 
 ## Modules
 
-* `TracerAdvectionDiffusion`: advection-diffusion of a passive tracer in a 2D domain.
+* `TracerAdvectionDiffusion`: advection-diffusion of a passive tracer in 1D or 2D domains.
 
 
 ## Cite
