@@ -5,7 +5,8 @@ export
   set_c!,
   updatevars!,
   OneDAdvectingFlow,
-  TwoDAdvectingFlow
+  TwoDAdvectingFlow, 
+  ThreeDAdvectingFlow
 
 using
   CUDA,
@@ -76,6 +77,33 @@ hence `steadyflow=true`.
 """
 TwoDAdvectingFlow(; u=noflow, v=noflow, steadyflow=true) = TwoDAdvectingFlow(u, v, steadyflow)
 
+"""
+    struct ThreeDAdvectingFlow <: AbstractAdvectingFlow
+
+A struct containing the advecting flow for a three dimensional `TracerAdvectionDiffusion.Problem`.
+Included are
+
+$(TYPEDFIELDS)
+"""
+struct ThreeDAdvectingFlow <: AbstractAdvectingFlow
+    "function for the x-component of the advecting flow"
+             u :: Function
+    "function for the y-component of the advecting flow"
+             v :: Function
+    "function for the z-component of the advecting flow"
+             w :: Function
+    "boolean declaring whether or not the flow is steady (i.e., not time dependent)"
+    steadyflow :: Bool
+end
+
+"""
+    ThreeDAdvectingFlow(; u=noflow, v=noflow, w=noflow, steadyflow=true)
+
+Constructor for the `ThreeDAdvectingFlow`. The default function for the advecting flow components is `noflow`
+hence `steadyflow=true`.    
+"""
+ThreeDAdvectingFlow(; u=noflow, v=noflow, w=noflow, steadyflow=true) = ThreeDAdvectingFlow(u, v, w, steadyflow)
+
 # --
 # Problems
 # --
@@ -86,7 +114,8 @@ TwoDAdvectingFlow(; u=noflow, v=noflow, steadyflow=true) = TwoDAdvectingFlow(u, 
 Construct a constant diffusivity problem with steady or time-varying `advecting_flow` on device `dev`.
 The dimensionality of the problem is inferred from the `advecting_flow`:
 * `advecting_flow::OneDAdvectingFlow` for 1D advection-diffusion problem,
-* `advecting_flow::TwoDAdvectingFlow` for 2D advection-diffusion problem.
+* `advecting_flow::TwoDAdvectingFlow` for 2D advection-diffusion problem,
+* `advecting_flow::ThreeDAdvectingFlow` for 3D advection-diffusion problem
 """
 function Problem(dev, advecting_flow::OneDAdvectingFlow;
                      nx = 128,
@@ -133,6 +162,34 @@ function Problem(dev, advecting_flow::TwoDAdvectingFlow;
   equation = Equation(dev, params, grid)
 
   return FourierFlows.Problem(equation, stepper, dt, grid, vars, params, dev)
+end
+
+function Problem(dev, advecting_flow::ThreeDAdvectingFlow;
+    nx = 128,
+    Lx = 2π,
+    ny = nx,
+    Ly = Lx,
+    nz = nx,
+    Lz = Lx,
+     κ = 0.1,
+     η = κ,
+     ι = κ,
+    dt = 0.01,
+stepper = "RK4",
+     T = Float64
+)
+
+grid = ThreeDGrid(dev, nx, Lx, ny, Ly, nz, Lz; T)
+
+params = advecting_flow.steadyflow==true ?
+ConstDiffSteadyFlowParams(η, κ, ι, advecting_flow.u, advecting_flow.v, advecting_flow.w, grid::ThreeDGrid) :
+ConstDiffTimeVaryingFlowParams(η, κ, ι, advecting_flow.u, advecting_flow.v, advecting_flow.w)
+
+vars = Vars(dev, grid; T)
+
+equation = Equation(dev, params, grid)
+
+return FourierFlows.Problem(equation, stepper, dt, grid, vars, params, dev)
 end
 
 """
@@ -217,6 +274,33 @@ struct ConstDiffTimeVaryingFlowParams2D{T} <: AbstractTimeVaryingFlowParams
 end
 
 """
+    struct ConstDiffTimeVaryingFlowParams3D{T} <: AbstractTimeVaryingFlowParams
+
+A struct containing the parameters for a constant diffusivity problem with time-varying flow in three
+dimensions. Included are:
+
+$(TYPEDFIELDS)
+"""
+struct ConstDiffTimeVaryingFlowParams3D{T} <: AbstractTimeVaryingFlowParams
+    "isotropic horizontal (x) diffusivity coefficient"
+       η :: T
+    "isotropic horizontal (y) diffusivity coefficient"
+       κ :: T
+    "isotropic vertical diffusivity coefficient"
+       ι :: T
+    "isotropic hyperdiffusivity coefficient"
+      κh :: T
+    "isotropic hyperdiffusivity order"  
+     nκh :: Int
+    "function returning the x-component of advecting flow"
+       u :: Function
+    "function returning the y-component of advecting flow"
+       v :: Function
+    "function returning the z-component of advecting flow"
+       w :: Function
+end
+
+"""
     ConstDiffTimeVaryingFlowParams(κ, u)
     ConstDiffTimeVaryingFlowParams(η, κ, u, v)
 
@@ -224,6 +308,7 @@ The constructor for the `params` struct for constant diffusivity problem and tim
 """
 ConstDiffTimeVaryingFlowParams(κ, u) = ConstDiffTimeVaryingFlowParams1D(κ, 0κ, 0, u)
 ConstDiffTimeVaryingFlowParams(η, κ, u, v) = ConstDiffTimeVaryingFlowParams2D(η, κ, 0η, 0, u, v)
+ConstDiffTimeVaryingFlowParams(η, κ, ι, u, v, w) = ConstDiffTimeVaryingFlowParams3D(η, κ, ι, 0η, 0, u, v, w)
 
 """
     struct ConstDiffSteadyFlowParams1D{T} <: AbstractSteadyFlowParams
@@ -268,10 +353,39 @@ struct ConstDiffSteadyFlowParams2D{T, A} <: AbstractSteadyFlowParams
 end
 
 """
+    struct ConstDiffSteadyFlowParams3D{T} <: AbstractSteadyFlowParams
+
+A struct containing the parameters for a constant diffusivity problem with steady flow in three dimensions.
+Included are:
+
+$(TYPEDFIELDS)
+"""
+struct ConstDiffSteadyFlowParams3D{T, A} <: AbstractSteadyFlowParams
+  "isotropic horizontal (x) diffusivity coefficient"
+     η :: T
+  "isotropic horizontal (y) diffusivity coefficient"
+     κ :: T
+  "isotropic vertical diffusivity coefficient"
+     ι :: T
+  "isotropic hyperdiffusivity coefficient"
+    κh :: T
+  "isotropic hyperdiffusivity order"  
+   nκh :: Int
+   "x-component of advecting flow"
+     u :: A
+   "y-component of advecting flow"
+     v :: A
+   "z-component of advecting flow"
+     w :: A
+end
+
+"""
     ConstDiffSteadyFlowParams(κ, κh, nκh, u::Function, grid::OneDGrid)
     ConstDiffSteadyFlowParams(κ, u, grid::OneDGrid)
     ConstDiffSteadyFlowParams(η, κ, κh, nκh, u::Function, v::Function, grid::TwoDGrid)
     ConstDiffSteadyFlowParams(η, κ, u, v, grid::TwoDGrid)
+    ConstDiffSteadyFlowParams(η, κ, ι, κh, nκh, u::Function, v::Function, w::Function, grid::ThreeDGrid)
+    ConstDiffSteadyFlowParams(η, κ, ι, u, v, w, grid::ThreeDGrid)
 
 Return the parameters `params` for a constant diffusivity problem and steady flow.
 """
@@ -293,6 +407,17 @@ function ConstDiffSteadyFlowParams(η, κ, κh, nκh, u::Function, v::Function, 
 end
 
 ConstDiffSteadyFlowParams(η, κ, u, v, grid::TwoDGrid) = ConstDiffSteadyFlowParams(η, κ, 0η, 0, u, v, grid)
+
+function ConstDiffSteadyFlowParams(η, κ, ι, κh, nκh, u::Function, v::Function, w::Function, grid::ThreeDGrid)
+    x, y, z = gridpoints(grid)
+   ugrid = u.(x, y, z)
+   vgrid = v.(x, y, z)
+   wgrid = w.(x, y, z)
+   
+   return ConstDiffSteadyFlowParams3D(η, κ, ι, κh, nκh, ugrid, vgrid, wgrid)
+ end
+ 
+ ConstDiffSteadyFlowParams(η, κ, ι, u, v, w, grid::ThreeDGrid) = ConstDiffSteadyFlowParams(η, κ, ι, 0η, 0, u, v, w, grid)
 
 """
     struct ConstDiffTurbulentFlowParams{T} <: AbstractTurbulentFlowParams
@@ -356,6 +481,13 @@ function Equation(dev, params::ConstDiffTimeVaryingFlowParams2D, grid)
   return FourierFlows.Equation(L, calcN!, grid)
 end
 
+function Equation(dev, params::ConstDiffTimeVaryingFlowParams3D, grid)
+    L = zeros(dev, eltype(grid), (grid.nkr, grid.nl, grid.nm))
+    @. L = - params.η * grid.kr^2 - params.κ * grid.l^2 - params.ι * grid.m^2 - params.κh * grid.Krsq^params.nκh
+    
+    return FourierFlows.Equation(L, calcN!, grid)
+end
+
 function Equation(dev, params::ConstDiffSteadyFlowParams1D, grid)
     L = zeros(dev, eltype(grid), (grid.nkr))
     @. L = - params.κ * grid.kr^2 - params.κh * (grid.kr^2)^params.nκh
@@ -368,6 +500,13 @@ function Equation(dev, params::ConstDiffSteadyFlowParams2D, grid)
   @. L = - params.η * grid.kr^2 - params.κ * grid.l^2 - params.κh * grid.Krsq^params.nκh
   
   return FourierFlows.Equation(L, calcN_steadyflow!, grid)
+end
+
+function Equation(dev, params::ConstDiffSteadyFlowParams3D, grid)
+    L = zeros(dev, eltype(grid), (grid.nkr, grid.nl, grid.nm))
+    @. L = - params.η * grid.kr^2 - params.κ * grid.l^2 - params.ι * grid.m^2 - params.κh * grid.Krsq^params.nκh
+    
+    return FourierFlows.Equation(L, calcN_steadyflow!, grid)
 end
 
 function Equation(dev, params::ConstDiffTurbulentFlowParams, grid)
@@ -425,6 +564,32 @@ struct Vars2D{Aphys, Atrans} <: AbstractVars
 end
 
 """
+    struct Vars3D{Aphys, Atrans} <: AbstractVars
+
+The variables for a 3D `TracerAdvectionDiffussion` problem.
+
+$(FIELDS)
+"""
+struct Vars3D{Aphys, Atrans} <: AbstractVars
+    "tracer concentration"
+       c :: Aphys
+    "tracer concentration ``x``-derivative, ``∂c/∂x``"
+      cx :: Aphys
+    "tracer concentration ``y``-derivative, ``∂c/∂y``"
+      cy :: Aphys
+    "tracer concentration ``z``-derivative, ``∂c/∂z``"
+      cz :: Aphys
+    "Fourier transform of tracer concentration"
+      ch :: Atrans
+    "Fourier transform of tracer concentration ``x``-derivative, ``∂c/∂x``"
+     cxh :: Atrans
+    "Fourier transform of tracer concentration ``y``-derivative, ``∂c/∂y``"
+     cyh :: Atrans
+     "Fourier transform of tracer concentration ``z``-derivative, ``∂c/∂z``"
+     czh :: Atrans
+end
+
+"""
     Vars(dev, grid; T=Float64) 
 
 Return the variables `vars` for a constant diffusivity problem on `grid` and device `dev`.
@@ -442,6 +607,13 @@ function Vars(::Dev, grid::TwoDGrid; T=Float64) where Dev
   
   return Vars2D(c, cx, cy, ch, cxh, cyh)
 end
+
+function Vars(::Dev, grid::ThreeDGrid; T=Float64) where Dev
+    @devzeros Dev T (grid.nx, grid.ny, grid.nz) c cx cy cz
+    @devzeros Dev Complex{T} (grid.nkr, grid.nl, grid.nm) ch cxh cyh czh
+    
+    return Vars3D(c, cx, cy, cz, ch, cxh, cyh, czh)
+  end
 
 function Vars(dev::Dev, grid::AbstractGrid{T}, MQGprob::FourierFlows.Problem) where {Dev, T}
   nlayers = numberoflayers(MQGprob.params)
@@ -493,6 +665,22 @@ function calcN!(N, sol, t, clock, vars, params::AbstractTimeVaryingFlowParams, g
   return nothing
 end
 
+function calcN!(N, sol, t, clock, vars, params::AbstractTimeVaryingFlowParams, grid::ThreeDGrid)
+    @. vars.cxh = im * grid.kr * sol
+    @. vars.cyh = im * grid.l  * sol
+    @. vars.cyh = im * grid.m  * sol
+  
+    ldiv!(vars.cx, grid.rfftplan, vars.cxh) # destroys vars.cxh when using fftw
+    ldiv!(vars.cy, grid.rfftplan, vars.cyh) # destroys vars.cyh when using fftw
+    ldiv!(vars.cz, grid.rfftplan, vars.czh) # destroys vars.cyh when using fftw
+  
+    x, y, z = gridpoints(grid)
+    @. vars.cx = -params.u(x, y, z, clock.t) * vars.cx - params.v(x, y, z, clock.t) * vars.cy - params.w(x, y, z, clock.t) * vars.cz # copies over vars.cx so vars.cx = N in physical space
+    mul!(N, grid.rfftplan, vars.cx)
+    
+    return nothing
+  end
+
 
 """
     calcN_steadyflow!(N, sol, t, clock, vars, params, grid)
@@ -521,6 +709,21 @@ function calcN_steadyflow!(N, sol, t, clock, vars, params::AbstractSteadyFlowPar
   mul!(N, grid.rfftplan, vars.cx)
   
   return nothing
+end
+
+function calcN_steadyflow!(N, sol, t, clock, vars, params::AbstractSteadyFlowParams, grid::ThreeDGrid)
+    @. vars.cxh = im * grid.kr * sol
+    @. vars.cyh = im * grid.l  * sol
+    @. vars.czh = im * grid.m  * sol
+  
+    ldiv!(vars.cx, grid.rfftplan, vars.cxh) # destroys vars.cxh when using fftw
+    ldiv!(vars.cy, grid.rfftplan, vars.cyh) # destroys vars.cyh when using fftw
+    ldiv!(vars.cz, grid.rfftplan, vars.czh) # destroys vars.cyh when using fftw
+
+    @. vars.cx = -params.u * vars.cx - params.v * vars.cy - params.w * vars.cz # copies over vars.cx so vars.cx = N in physical space
+    mul!(N, grid.rfftplan, vars.cx)
+    
+    return nothing
 end
 
 """

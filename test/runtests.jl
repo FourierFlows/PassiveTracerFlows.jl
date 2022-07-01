@@ -29,17 +29,25 @@ for dev in devices
     dt, tfinal  = 0.002, 0.1
     @test test_timedependentvel1D(stepper, dt, tfinal, dev)
     dt, nsteps  = 1e-2, 40
-    @test test_constvel(stepper, dt, nsteps, dev)
+    @test test_constvel2D(stepper, dt, nsteps, dev)
     dt, tfinal  = 0.002, 0.1
-    @test test_timedependentvel(stepper, dt, tfinal, dev)
+    @test test_timedependentvel2D(stepper, dt, tfinal, dev)
+    dt, nsteps  = 1e-2, 40
+    @test test_constvel3D(stepper, dt, nsteps, dev)
+    dt, tfinal  = 0.002, 0.1
+    @test test_timedependentvel3D(stepper, dt, tfinal, dev)
     dt, tfinal  = 0.005, 0.1
     @test test_diffusion1D(stepper, dt, tfinal, dev; steadyflow=true)
     dt, tfinal  = 0.005, 0.1
     @test test_diffusion1D(stepper, dt, tfinal, dev; steadyflow=false)
     dt, tfinal  = 0.005, 0.1
-    @test test_diffusion(stepper, dt, tfinal, dev; steadyflow=true)
+    @test test_diffusion2D(stepper, dt, tfinal, dev; steadyflow=true)
     dt, tfinal  = 0.005, 0.1
-    @test test_diffusion(stepper, dt, tfinal, dev; steadyflow=false)
+    @test test_diffusion2D(stepper, dt, tfinal, dev; steadyflow=false)
+    dt, tfinal  = 0.005, 0.1
+    @test test_diffusion3D(stepper, dt, tfinal, dev; steadyflow=true)
+    dt, tfinal  = 0.005, 0.1
+    @test test_diffusion3D(stepper, dt, tfinal, dev; steadyflow=false)
     dt, tfinal  = 0.005, 0.1
     @test test_diffusion_multilayerqg(stepper, dt, tfinal, dev)
     dt, tfinal  = 0.005, 0.1
