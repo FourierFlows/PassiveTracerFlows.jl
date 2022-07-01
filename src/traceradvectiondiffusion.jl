@@ -595,10 +595,10 @@ end
 Return the variables `vars` for a constant diffusivity problem on `grid` and device `dev`.
 """
 function Vars(::Dev, grid::OneDGrid; T=Float64) where Dev
-    @devzeros Dev T (grid.nx) c cx
-    @devzeros Dev Complex{T} (grid.nkr) ch cxh
+  @devzeros Dev T (grid.nx) c cx
+  @devzeros Dev Complex{T} (grid.nkr) ch cxh
     
-    return Vars1D(c, cx, ch, cxh)
+  return Vars1D(c, cx, ch, cxh)
 end
 
 function Vars(::Dev, grid::TwoDGrid; T=Float64) where Dev
@@ -609,11 +609,11 @@ function Vars(::Dev, grid::TwoDGrid; T=Float64) where Dev
 end
 
 function Vars(::Dev, grid::ThreeDGrid; T=Float64) where Dev
-    @devzeros Dev T (grid.nx, grid.ny, grid.nz) c cx cy cz
-    @devzeros Dev Complex{T} (grid.nkr, grid.nl, grid.nm) ch cxh cyh czh
+  @devzeros Dev T (grid.nx, grid.ny, grid.nz) c cx cy cz
+  @devzeros Dev Complex{T} (grid.nkr, grid.nl, grid.nm) ch cxh cyh czh
     
-    return Vars3D(c, cx, cy, cz, ch, cxh, cyh, czh)
-  end
+  return Vars3D(c, cx, cy, cz, ch, cxh, cyh, czh)
+end
 
 function Vars(dev::Dev, grid::AbstractGrid{T}, MQGprob::FourierFlows.Problem) where {Dev, T}
   nlayers = numberoflayers(MQGprob.params)
@@ -668,7 +668,7 @@ end
 function calcN!(N, sol, t, clock, vars, params::AbstractTimeVaryingFlowParams, grid::ThreeDGrid)
     @. vars.cxh = im * grid.kr * sol
     @. vars.cyh = im * grid.l  * sol
-    @. vars.cyh = im * grid.m  * sol
+    @. vars.czh = im * grid.m  * sol
   
     ldiv!(vars.cx, grid.rfftplan, vars.cxh) # destroys vars.cxh when using fftw
     ldiv!(vars.cy, grid.rfftplan, vars.cyh) # destroys vars.cyh when using fftw
