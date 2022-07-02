@@ -156,7 +156,7 @@ Advect a gaussian concentration `c0(x, y, t)` with a constant velocity flow
 function test_constvel3D(stepper, dt, nsteps, dev::Device=CPU())
 
   nx, Lx = 128, 2π
-  uvel, vvel, wvel = 0.2, 0.1, 0.1
+  uvel, vvel, wvel = 0.2, 0.1, 0.15
   u(x, y, z) = uvel
   v(x, y, z) = vvel
   w(x, y, z) = wvel
@@ -188,8 +188,8 @@ end
     test_timedependenttvel3D(; kwargs...)
 
 Advect a gaussian concentration `c0(x, y, z, t)` with a time-varying velocity flow
-`u(x, y, z, t) = uvel`, `v(x, y, z, t) = vvel * sign(-t + tfinal/2)` and `w(x, y, z, t) = wvel` and compares the final
-state with `cfinal = c0(x - uvel * tfinal, y, z - wvel)`.
+`u(x, y, z, t) = uvel`, `v(x, y, z, t) = vvel * sign(-t + tfinal/2)` and `w(x, y, z, t) = wvel` and
+compares the final state with `cfinal = c0(x - uvel * tfinal, y, z - wvel * tfinal)`.
 """
 function test_timedependentvel3D(stepper, dt, tfinal, dev::Device=CPU(); uvel = 0.5, αv = 0.5, wvel = 0.5)
   
@@ -353,9 +353,10 @@ function test_diffusion_multilayerqg(stepper, dt, tfinal, dev::Device=CPU())
   TracerAdvectionDiffusion.updatevars!(ADprob)
 
   # Compare to analytic solution
-  return isapprox(cfinal, vs.c[:, :, 1], rtol = gr.nx*gr.ny*nsteps*1e-12)  &&
+  return isapprox(cfinal, vs.c[:, :, 1], rtol = gr.nx*gr.ny*nsteps*1e-12) &&
          isapprox(cfinal, vs.c[:, :, 2], rtol = gr.nx*gr.ny*nsteps*1e-12)
 end
+
 """
     test_diffusion3D(; kwargs...)
 
@@ -404,11 +405,10 @@ function test_hyperdiffusion(stepper, dt, tfinal, dev::Device=CPU(); steadyflow 
 
    nx = 128
    Lx = 2π
-    κ = 0.0   # no diffusivity
-    η = κ     # no diffusivity
-   κh = 0.01  # hyperdiffusivity coeff
-  nκh = 1     # nκh=1 converts hyperdiffusivity to plain diffusivity
-              # so we can compare with the analytic solution of heat equation
+    κ = η = 0.0  # no diffusivity
+   κh = 0.01     # hyperdiffusivity coeff
+  nκh = 1        # nκh=1 converts hyperdiffusivity to plain diffusivity
+                 # so we can compare with the analytic solution of heat equation
 
   nsteps = round(Int, tfinal/dt)
 
