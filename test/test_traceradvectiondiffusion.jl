@@ -272,7 +272,6 @@ Diffuses a gaussian concentration c0(x, y, t) and compares the final state with
 the analytic solution of the heat equation, cfinal
 """
 function test_diffusion2D(stepper, dt, tfinal, dev::Device=CPU(); steadyflow = true)
-
   nx = 128
   Lx = 2π
    κ = 0.01
@@ -364,36 +363,35 @@ Diffuses a gaussian concentration c0(x, y, z, t) and compares the final state wi
 the analytic solution of the heat equation, cfinal
 """
 function test_diffusion3D(stepper, dt, tfinal, dev::Device=CPU(); steadyflow = true)
+  nx = 64
+  Lx = 2π
+   κ = 0.01
+  nsteps = round(Int, tfinal/dt)
 
-    nx = 128
-    Lx = 2π
-     κ = 0.01
-    nsteps = round(Int, tfinal/dt)
-  
-    if !isapprox(tfinal, nsteps*dt, rtol=rtol_traceradvectiondiffusion)
-      error("tfinal is not multiple of dt")
-    end
-  
-    advecting_flow = ThreeDAdvectingFlow(; steadyflow)
-    prob = TracerAdvectionDiffusion.Problem(dev, advecting_flow; nx, Lx, κ, dt, stepper)
-    sol, cl, vs, pr, gr = prob.sol, prob.clock, prob.vars, prob.params, prob.grid
-    x, y, z = gridpoints(gr)
-  
-    c0ampl, σ = 0.1, 0.1
-    c0func(x, y, z) = c0ampl * exp(-(x^2 + y^2 + z^2) / 2σ^2)
-  
-    c0 = @. c0func(x, y, z)
-    tfinal = nsteps * dt
-    σt = sqrt(2κ * tfinal + σ^2)
-    cfinal = @. c0ampl * (σ^3 / σt^3) * exp(-(x^2 + y^2 + z^2) / 2σt^2)
-  
-    TracerAdvectionDiffusion.set_c!(prob, c0)
-  
-    stepforward!(prob, nsteps)
-    TracerAdvectionDiffusion.updatevars!(prob)
-  
-    return isapprox(cfinal, vs.c, rtol=gr.nx*gr.ny*gr.nz*nsteps*1e-12)
+  if !isapprox(tfinal, nsteps*dt, rtol=rtol_traceradvectiondiffusion)
+    error("tfinal is not multiple of dt")
   end
+
+  advecting_flow = ThreeDAdvectingFlow(; steadyflow)
+  prob = TracerAdvectionDiffusion.Problem(dev, advecting_flow; nx, Lx, κ, dt, stepper)
+  sol, cl, vs, pr, gr = prob.sol, prob.clock, prob.vars, prob.params, prob.grid
+  x, y, z = gridpoints(gr)
+
+  c0ampl, σ = 0.1, 0.1
+  c0func(x, y, z) = c0ampl * exp(-(x^2 + y^2 + z^2) / 2σ^2)
+
+  c0 = @. c0func(x, y, z)
+  tfinal = nsteps * dt
+  σt = sqrt(2κ * tfinal + σ^2)
+  cfinal = @. c0ampl * (σ / σt)^3 * exp(-(x^2 + y^2 + z^2) / 2σt^2)
+
+  TracerAdvectionDiffusion.set_c!(prob, c0)
+
+  stepforward!(prob, nsteps)
+  TracerAdvectionDiffusion.updatevars!(prob)
+
+  return isapprox(cfinal, vs.c, rtol=gr.nx*gr.ny*gr.nz*nsteps*1e-10)
+end
 
 """
     test_hyperdiffusion(; kwargs...)
@@ -402,7 +400,6 @@ Diffuses a gaussian concentration c0(x, y, t) using hyperdiffusivity and
 compares the final state with the analytic solution of the heat equation, cfinal
 """
 function test_hyperdiffusion(stepper, dt, tfinal, dev::Device=CPU(); steadyflow = true)
-
    nx = 128
    Lx = 2π
     κ = η = 0.0  # no diffusivity
