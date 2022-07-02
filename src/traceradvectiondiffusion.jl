@@ -154,8 +154,8 @@ function Problem(dev, advecting_flow::TwoDAdvectingFlow;
   grid = TwoDGrid(dev, nx, Lx, ny, Ly; T)
 
   params = advecting_flow.steadyflow==true ?
-           ConstDiffSteadyFlowParams(η, κ, advecting_flow.u, advecting_flow.v, grid::TwoDGrid) :
-           ConstDiffTimeVaryingFlowParams(η, κ, advecting_flow.u, advecting_flow.v)
+           ConstDiffSteadyFlowParams(κ, η, advecting_flow.u, advecting_flow.v, grid::TwoDGrid) :
+           ConstDiffTimeVaryingFlowParams(κ, η, advecting_flow.u, advecting_flow.v)
 
   vars = Vars(dev, grid; T)
 
@@ -214,7 +214,7 @@ function Problem(dev, MQGprob::FourierFlows.Problem;
     step_until!(MQGprob, tracer_release_time)
   end
 
-  params = ConstDiffTurbulentFlowParams(η, κ, tracer_release_time, MQGprob)
+  params = ConstDiffTurbulentFlowParams(κ, η, tracer_release_time, MQGprob)
   vars = Vars(dev, grid, MQGprob)
   equation = Equation(dev, params, grid)
 
@@ -408,21 +408,21 @@ function ConstDiffSteadyFlowParams(κ, κh, nκh, u::Function, grid::OneDGrid)
 end
  
  ConstDiffSteadyFlowParams(κ, u, grid::OneDGrid) =
-  σConstDiffSteadyFlowParams(κ, 0κ, 0, u, grid)
+  ConstDiffSteadyFlowParams(κ, 0κ, 0, u, grid)
 
 function ConstDiffSteadyFlowParams(κ, η, κh, nκh, u::Function, v::Function, grid::TwoDGrid)
   x, y = gridpoints(grid)
 
-  return ConstDiffSteadyFlowParams2D(η, κ, κh, nκh, u.(x, y), v.(x, y))
+  return ConstDiffSteadyFlowParams2D(κ, η, κh, nκh, u.(x, y), v.(x, y))
 end
 
-ConstDiffSteadyFlowParams(η, κ, u, v, grid::TwoDGrid) =
-  σConstDiffSteadyFlowParams(κ, η, 0κ, 0, u, v, grid)
+ConstDiffSteadyFlowParams(κ, η, u, v, grid::TwoDGrid) =
+  ConstDiffSteadyFlowParams(κ, η, 0κ, 0, u, v, grid)
 
-function ConstDiffSteadyFlowParams(η, κ, ι, κh, nκh, u::Function, v::Function, w::Function, grid::ThreeDGrid)
+function ConstDiffSteadyFlowParams(κ, η, ι, κh, nκh, u::Function, v::Function, w::Function, grid::ThreeDGrid)
   x, y, z = gridpoints(grid)
    
-  return ConstDiffSteadyFlowParams3D(η, κ, ι, κh, nκh, u.(x, y, z), v.(x, y, z), w.(x, y, z))
+  return ConstDiffSteadyFlowParams3D(κ, η, ι, κh, nκh, u.(x, y, z), v.(x, y, z), w.(x, y, z))
  end
  
  ConstDiffSteadyFlowParams(κ, η, ι, u, v, w, grid::ThreeDGrid) =
@@ -485,16 +485,14 @@ end
 
 function Equation(dev, params::ConstDiffTimeVaryingFlowParams2D, grid::TwoDGrid)
   L = zeros(dev, eltype(grid), (grid.nkr, grid.nl))
-  @. L = - params.κ * grid.kr^2 - params.η * grid.l^2
-         - params.κh * grid.Krsq^params.nκh
+  @. L = - params.κ * grid.kr^2 - params.η * grid.l^2 - params.κh * grid.Krsq^params.nκh
   
   return FourierFlows.Equation(L, calcN!, grid)
 end
 
 function Equation(dev, params::ConstDiffTimeVaryingFlowParams3D, grid::ThreeDGrid)
   L = zeros(dev, eltype(grid), (grid.nkr, grid.nl, grid.nm))
-  @. L = - params.κ * grid.kr^2 - params.η * grid.l^2 - params.ι * grid.m^2
-         - params.κh * grid.Krsq^params.nκh
+  @. L = - params.κ * grid.kr^2 - params.η * grid.l^2 - params.ι * grid.m^2 - params.κh * grid.Krsq^params.nκh
   
   return FourierFlows.Equation(L, calcN!, grid)
 end
@@ -545,9 +543,9 @@ struct Vars1D{Aphys, Atrans} <: AbstractVars
   "tracer concentration"
       c :: Aphys
   "tracer concentration ``x``-derivative, ``∂c/∂x``"
-    cx :: Aphys
+     cx :: Aphys
   "Fourier transform of tracer concentration"
-    ch :: Atrans
+     ch :: Atrans
   "Fourier transform of tracer concentration ``x``-derivative, ``∂c/∂x``"
     cxh :: Atrans
 end
@@ -563,11 +561,11 @@ struct Vars2D{Aphys, Atrans} <: AbstractVars
   "tracer concentration"
       c :: Aphys
   "tracer concentration ``x``-derivative, ``∂c/∂x``"
-    cx :: Aphys
+     cx :: Aphys
   "tracer concentration ``y``-derivative, ``∂c/∂y``"
-    cy :: Aphys
+     cy :: Aphys
   "Fourier transform of tracer concentration"
-    ch :: Atrans
+     ch :: Atrans
   "Fourier transform of tracer concentration ``x``-derivative, ``∂c/∂x``"
     cxh :: Atrans
   "Fourier transform of tracer concentration ``y``-derivative, ``∂c/∂y``"
@@ -585,13 +583,13 @@ struct Vars3D{Aphys, Atrans} <: AbstractVars
   "tracer concentration"
       c :: Aphys
   "tracer concentration ``x``-derivative, ``∂c/∂x``"
-    cx :: Aphys
+     cx :: Aphys
   "tracer concentration ``y``-derivative, ``∂c/∂y``"
-    cy :: Aphys
+     cy :: Aphys
   "tracer concentration ``z``-derivative, ``∂c/∂z``"
-    cz :: Aphys
+     cz :: Aphys
   "Fourier transform of tracer concentration"
-    ch :: Atrans
+     ch :: Atrans
   "Fourier transform of tracer concentration ``x``-derivative, ``∂c/∂x``"
     cxh :: Atrans
   "Fourier transform of tracer concentration ``y``-derivative, ``∂c/∂y``"
