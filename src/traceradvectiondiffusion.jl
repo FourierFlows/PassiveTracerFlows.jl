@@ -260,11 +260,11 @@ $(TYPEDFIELDS)
 """
 struct ConstDiffTimeVaryingFlowParams2D{T} <: AbstractTimeVaryingFlowParams
   "``x``-diffusivity coefficient"
-      κ :: T
+       κ :: T
   "``y``-diffusivity coefficient"
-      η :: T
+       η :: T
   "isotropic hyperdiffusivity coefficient"
-    κh :: T
+     κh :: T
   "isotropic hyperdiffusivity order"  
     nκh :: Int
   "function returning the ``x``-component of advecting flow"
@@ -289,7 +289,7 @@ struct ConstDiffTimeVaryingFlowParams3D{T} <: AbstractTimeVaryingFlowParams
   "``z``-diffusivity coefficient"
       ι :: T
   "isotropic hyperdiffusivity coefficient"
-    κh :: T
+     κh :: T
   "isotropic hyperdiffusivity order"  
     nκh :: Int
   "function returning the ``x``-component of advecting flow"
