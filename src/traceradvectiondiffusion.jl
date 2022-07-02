@@ -243,7 +243,7 @@ struct ConstDiffTimeVaryingFlowParams1D{T} <: AbstractTimeVaryingFlowParams
   "diffusivity coefficient"
       κ :: T
   "hyperdiffusivity coefficient"
-    κh :: T
+     κh :: T
   "hyperdiffusivity order"  
     nκh :: Int
   "function returning the ``x``-component of advecting flow"
@@ -260,9 +260,9 @@ $(TYPEDFIELDS)
 """
 struct ConstDiffTimeVaryingFlowParams2D{T} <: AbstractTimeVaryingFlowParams
   "``x``-diffusivity coefficient"
-       κ :: T
+      κ :: T
   "``y``-diffusivity coefficient"
-       η :: T
+      η :: T
   "isotropic hyperdiffusivity coefficient"
      κh :: T
   "isotropic hyperdiffusivity order"  
@@ -324,8 +324,7 @@ ConstDiffTimeVaryingFlowParams(κ, η, ι, u, v, w) = ConstDiffTimeVaryingFlowPa
 """
     struct ConstDiffSteadyFlowParams1D{T} <: AbstractSteadyFlowParams
 
-A container forthe parameters of aa constant diffusivity problem with steady flow in one dimensions.
-Includes:
+The parameters of a constant diffusivity problem with steady flow in one dimension.
 
 $(TYPEDFIELDS)
 """
@@ -343,8 +342,7 @@ end
 """
     struct ConstDiffSteadyFlowParams2D{T} <: AbstractSteadyFlowParams
 
-A container for the parameters for a constant diffusivity problem with steady flow in two dimensions.
-Includes:
+The parameters for a constant diffusivity problem with steady flow in two dimensions.
 
 $(TYPEDFIELDS)
 """
@@ -366,8 +364,7 @@ end
 """
     struct ConstDiffSteadyFlowParams3D{T} <: AbstractSteadyFlowParams
 
-A container for the parameters for a constant diffusivity problem with steady flow in three dimensions.
-Includes:
+The parameters for a constant diffusivity problem with steady flow in three dimensions.
 
 $(TYPEDFIELDS)
 """
@@ -431,8 +428,8 @@ function ConstDiffSteadyFlowParams(κ, η, ι, κh, nκh, u::Function, v::Functi
 """
     struct ConstDiffTurbulentFlowParams{T} <: AbstractTurbulentFlowParams
 
-A container for the parameters of a constant diffusivity problem with flow obtained
-from a `GeophysicalFlows.MultiLayerQG` problem. Includes:
+The parameters of a constant diffusivity problem with flow obtained from a
+`GeophysicalFlows.MultiLayerQG` problem.
 
 $(TYPEDFIELDS)
 """
@@ -671,8 +668,7 @@ function calcN!(N, sol, t, clock, vars, params::AbstractTimeVaryingFlowParams, g
   x, y = gridpoints(grid)
 
   # store N (in physical space) into vars.cx
-  @. vars.cx = - params.u(x, y, clock.t) * vars.cx
-               - params.v(x, y, clock.t) * vars.cy
+  @. vars.cx = - params.u(x, y, clock.t) * vars.cx - params.v(x, y, clock.t) * vars.cy
 
   mul!(N, grid.rfftplan, vars.cx)
   
@@ -691,9 +687,7 @@ function calcN!(N, sol, t, clock, vars, params::AbstractTimeVaryingFlowParams, g
   x, y, z = gridpoints(grid)
 
   # store N (in physical space) into vars.cx
-  @. vars.cx = - params.u(x, y, z, clock.t) * vars.cx
-               - params.v(x, y, z, clock.t) * vars.cy
-               - params.w(x, y, z, clock.t) * vars.cz
+  @. vars.cx = - params.u(x, y, z, clock.t) * vars.cx - params.v(x, y, z, clock.t) * vars.cy - params.w(x, y, z, clock.t) * vars.cz
 
   mul!(N, grid.rfftplan, vars.cx)
   
@@ -712,7 +706,7 @@ function calcN_steadyflow!(N, sol, t, clock, vars, params::AbstractSteadyFlowPar
   ldiv!(vars.cx, grid.rfftplan, vars.cxh) # destroys vars.cxh when using fftw
 
   # store N (in physical space) into vars.cx
-  @. vars.cx = -params.u * vars.cx
+  @. vars.cx = - params.u * vars.cx
   mul!(N, grid.rfftplan, vars.cx)
   
   return nothing
@@ -726,7 +720,7 @@ function calcN_steadyflow!(N, sol, t, clock, vars, params::AbstractSteadyFlowPar
   ldiv!(vars.cy, grid.rfftplan, vars.cyh) # destroys vars.cyh when using fftw
 
   # store N (in physical space) into vars.cx
-  @. vars.cx = -params.u * vars.cx - params.v * vars.cy
+  @. vars.cx = - params.u * vars.cx - params.v * vars.cy
 
   mul!(N, grid.rfftplan, vars.cx)
   
@@ -743,7 +737,7 @@ function calcN_steadyflow!(N, sol, t, clock, vars, params::AbstractSteadyFlowPar
   ldiv!(vars.cz, grid.rfftplan, vars.czh) # destroys vars.cyh when using fftw
 
   # store N (in physical space) into vars.cx
-  @. vars.cx = -params.u * vars.cx - params.v * vars.cy - params.w * vars.cz
+  @. vars.cx = - params.u * vars.cx - params.v * vars.cy - params.w * vars.cz
 
   mul!(N, grid.rfftplan, vars.cx)
   

@@ -13,7 +13,7 @@ function test_constvel1D(stepper, dt, nsteps, dev::Device=CPU())
   advecting_flow = OneDAdvectingFlow(; u)
 
   prob = TracerAdvectionDiffusion.Problem(dev, advecting_flow; nx, Lx, κ=0.0, dt, stepper)
-  sol, cl, vs, pr, gr = prob.sol, prob.clock, prob.vars, prob.params, prob.grid
+  sol, vs, pr, gr = prob.sol, prob.vars, prob.params, prob.grid
   x = gridpoints(gr)
 
   σ = 0.1
@@ -52,7 +52,7 @@ function test_timedependentvel1D(stepper, dt, tfinal, dev::Device=CPU(); uvel = 
   advecting_flow = OneDAdvectingFlow(; u, steadyflow = false)
 
   prob = TracerAdvectionDiffusion.Problem(dev, advecting_flow; nx, Lx, κ=0.0, dt, stepper)
-  sol, cl, vs, pr, gr = prob.sol, prob.clock, prob.vars, prob.params, prob.grid
+  sol, vs, pr, gr = prob.sol, prob.vars, prob.params, prob.grid
   x = gridpoints(gr)
 
   σ = 0.2
@@ -85,7 +85,7 @@ function test_constvel2D(stepper, dt, nsteps, dev::Device=CPU())
   advecting_flow = TwoDAdvectingFlow(; u, v)
 
   prob = TracerAdvectionDiffusion.Problem(dev, advecting_flow; nx, Lx, κ=0.0, dt, stepper)
-  sol, cl, vs, pr, gr = prob.sol, prob.clock, prob.vars, prob.params, prob.grid
+  sol, vs, pr, gr = prob.sol, prob.vars, prob.params, prob.grid
 
   x, y = gridpoints(gr)
 
@@ -114,7 +114,6 @@ Advect a gaussian concentration `c0(x, y, t)` with a time-varying velocity flow
 state with `cfinal = c0(x - uvel * tfinal, y)`.
 """
 function test_timedependentvel2D(stepper, dt, tfinal, dev::Device=CPU(); uvel = 0.5, αv = 0.5)
-  
   nx, Lx = 128, 2π
   nsteps = round(Int, tfinal/dt)
   
@@ -127,7 +126,7 @@ function test_timedependentvel2D(stepper, dt, tfinal, dev::Device=CPU(); uvel = 
   advecting_flow = TwoDAdvectingFlow(; u, v, steadyflow = false)
 
   prob = TracerAdvectionDiffusion.Problem(dev, advecting_flow; nx, Lx, κ=0.0, dt, stepper)
-  sol, cl, vs, pr, gr = prob.sol, prob.clock, prob.vars, prob.params, prob.grid
+  sol, vs, pr, gr = prob.sol, prob.vars, prob.params, prob.grid
   x, y = gridpoints(gr)
 
   σ = 0.2
@@ -154,16 +153,15 @@ Advect a gaussian concentration `c0(x, y, t)` with a constant velocity flow
 `cfinal = c0(x - uvel * tfinal, y - vvel * tfinal, z - wvel * tfinal)`.
 """
 function test_constvel3D(stepper, dt, nsteps, dev::Device=CPU())
-
   nx, Lx = 128, 2π
-  uvel, vvel, wvel = 0.2, 0.1, 0.15
+  uvel, vvel, wvel = 0.2, 0.1, 0.05
   u(x, y, z) = uvel
   v(x, y, z) = vvel
   w(x, y, z) = wvel
   advecting_flow = ThreeDAdvectingFlow(; u, v, w)
 
   prob = TracerAdvectionDiffusion.Problem(dev, advecting_flow; nx, Lx, κ=0.0, dt, stepper)
-  sol, cl, vs, pr, gr = prob.sol, prob.clock, prob.vars, prob.params, prob.grid
+  sol, vs, pr, gr = prob.sol, prob.vars, prob.params, prob.grid
 
   x, y, z = gridpoints(gr)
 
@@ -192,7 +190,6 @@ Advect a gaussian concentration `c0(x, y, z, t)` with a time-varying velocity fl
 compares the final state with `cfinal = c0(x - uvel * tfinal, y, z - wvel * tfinal)`.
 """
 function test_timedependentvel3D(stepper, dt, tfinal, dev::Device=CPU(); uvel = 0.5, αv = 0.5, wvel = 0.5)
-  
   nx, Lx = 128, 2π
   nsteps = round(Int, tfinal/dt)
   
@@ -206,7 +203,8 @@ function test_timedependentvel3D(stepper, dt, tfinal, dev::Device=CPU(); uvel = 
   advecting_flow = ThreeDAdvectingFlow(; u, v, w, steadyflow = false)
 
   prob = TracerAdvectionDiffusion.Problem(dev, advecting_flow; nx, Lx, κ=0.0, dt, stepper)
-  sol, cl, vs, pr, gr = prob.sol, prob.clock, prob.vars, prob.params, prob.grid
+  sol, vs, pr, gr = prob.sol, prob.vars, prob.params, prob.grid
+  
   x, y, z = gridpoints(gr)
 
   σ = 0.2
@@ -246,7 +244,7 @@ function test_diffusion1D(stepper, dt, tfinal, dev::Device=CPU(); steadyflow = t
   advecting_flow = OneDAdvectingFlow(; steadyflow)
 
   prob = TracerAdvectionDiffusion.Problem(dev, advecting_flow; nx, Lx, κ, dt, stepper)
-  sol, cl, vs, pr, gr = prob.sol, prob.clock, prob.vars, prob.params, prob.grid
+  sol, vs, pr, gr = prob.sol, prob.vars, prob.params, prob.grid
   x = gridpoints(gr)
   
   c0ampl, σ₀ = 0.1, 0.1
@@ -283,7 +281,7 @@ function test_diffusion2D(stepper, dt, tfinal, dev::Device=CPU(); steadyflow = t
 
   advecting_flow = TwoDAdvectingFlow(; steadyflow)
   prob = TracerAdvectionDiffusion.Problem(dev, advecting_flow; nx, Lx, κ, dt, stepper)
-  sol, cl, vs, pr, gr = prob.sol, prob.clock, prob.vars, prob.params, prob.grid
+  sol, vs, pr, gr = prob.sol, prob.vars, prob.params, prob.grid
   x, y = gridpoints(gr)
 
   c0ampl, σ = 0.1, 0.1
@@ -336,7 +334,7 @@ function test_diffusion_multilayerqg(stepper, dt, tfinal, dev::Device=CPU())
   end
 
   ADprob = TracerAdvectionDiffusion.Problem(dev, MQGprob; κ, stepper, tracer_release_time)
-  sol, cl, vs, pr, gr = ADprob.sol, ADprob.clock, ADprob.vars, ADprob.params, ADprob.grid
+  sol, vs, pr, gr = ADprob.sol, ADprob.vars, ADprob.params, ADprob.grid
   x, y = gridpoints(gr)
 
   c0ampl, σ = 0.1, 0.1
@@ -374,7 +372,7 @@ function test_diffusion3D(stepper, dt, tfinal, dev::Device=CPU(); steadyflow = t
 
   advecting_flow = ThreeDAdvectingFlow(; steadyflow)
   prob = TracerAdvectionDiffusion.Problem(dev, advecting_flow; nx, Lx, κ, dt, stepper)
-  sol, cl, vs, pr, gr = prob.sol, prob.clock, prob.vars, prob.params, prob.grid
+  sol, vs, pr, gr = prob.sol, prob.vars, prob.params, prob.grid
   x, y, z = gridpoints(gr)
 
   c0ampl, σ = 0.1, 0.1
@@ -416,7 +414,6 @@ function test_hyperdiffusion(stepper, dt, tfinal, dev::Device=CPU(); steadyflow 
   gr = TwoDGrid(dev, nx, Lx)
   x, y = gridpoints(gr)
 
-  #u, v = zero(x), zero(x) #0*x, 0*x
   u(x, y) = 0.0
   v(x, y) = 0.0
 
