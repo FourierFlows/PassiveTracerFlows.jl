@@ -39,7 +39,7 @@ $(TYPEDFIELDS)
 """
 struct OneDAdvectingFlow <: AbstractAdvectingFlow
   "function for the ``x``-component of the advecting flow"
-            u :: Function
+           u :: Function
   "boolean declaring whether or not the flow is steady (i.e., not time dependent)"
   steadyflow :: Bool
 end
@@ -62,9 +62,9 @@ $(TYPEDFIELDS)
 """
 struct TwoDAdvectingFlow <: AbstractAdvectingFlow
   "function for the ``x``-component of the advecting flow"
-            u :: Function
+           u :: Function
   "function for the ``y``-component of the advecting flow"
-            v :: Function
+           v :: Function
   "boolean declaring whether or not the flow is steady (i.e., not time dependent)"
   steadyflow :: Bool
 end
@@ -87,11 +87,11 @@ $(TYPEDFIELDS)
 """
 struct ThreeDAdvectingFlow <: AbstractAdvectingFlow
   "function for the ``x``-component of the advecting flow"
-            u :: Function
+           u :: Function
   "function for the ``y``-component of the advecting flow"
-            v :: Function
+           v :: Function
   "function for the ``z``-component of the advecting flow"
-            w :: Function
+           w :: Function
   "boolean declaring whether or not the flow is steady (i.e., not time dependent)"
   steadyflow :: Bool
 end
