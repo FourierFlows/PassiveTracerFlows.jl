@@ -41,7 +41,7 @@ compressible or incompressible.
 The equation is time-stepped forward in Fourier space. For example, for 2D problems:
 
 ```math
-\partial_t \widehat{c} = - \widehat{\bm{u} \bm{\cdot} \bm{\nabla} c} - \left[ (\kappa k_x^2 + \eta k_y^2) + \kappa_h |\bm{k}|^{2\nu_h} \right] \widehat{c}\ ,
+\partial_t \widehat{c} = - \widehat{\bm{u} \bm{\cdot} \bm{\nabla} c} - \left ( \kappa k_x^2 + \eta k_y^2 + \kappa_h |\bm{k}|^{2\nu_h} \right) \widehat{c}\ ,
 ```
 where ``\bm{k} = (k_x, k_y)``.
 
