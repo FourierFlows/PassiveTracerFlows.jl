@@ -8,25 +8,25 @@ This module solves the advection-diffusion equation for a passive tracer concent
 For 1D problems the tracer concentration ``c(x, t)`` evolves under:
 
 ```math
-\partial_t c + u \partial_x c = \underbrace{\kappa \partial_x^2 c}_{\textrm{diffusivity}} + \underbrace{\kappa_h (-1)^{n_h + 1} \partial_x^{2n_{h}}c}_{\textrm{hyper-diffusivity}} \ ,
+\partial_t c + u \partial_x c = \underbrace{\kappa \partial_x^2 c}_{\textrm{diffusivity}} + \underbrace{\kappa_h (-1)^{n_h + 1} \partial_x^{2n_h} c}_{\textrm{hyper-diffusivity}} \ ,
 ```
 
 where ``u(x, t)`` is the advecting flow and ``\kappa`` the diffusivity.
 
-For 2D problems the tracer concentration ``c(\boldsymbol{x}, t)`` evolves under:
+For 2D problems, ``\boldsymbol{x} = (x, y)``, the tracer concentration ``c(\boldsymbol{x}, t)`` evolves under:
 
 ```math
-\partial_t c + \bm{u} \bm{\cdot} \bm{\nabla} c = \underbrace{\kappa \partial_x^2 c + \eta \partial_y^2 c}_{\textrm{diffusivity}} + \underbrace{\kappa_h (-1)^{n_h + 1}} \nabla^{2n_{h}}c}_{\textrm{hyper-diffusivity}} \ ,
+\partial_t c + \bm{u} \bm{\cdot} \bm{\nabla} c = \underbrace{\kappa \partial_x^2 c + \eta \partial_y^2 c}_{\textrm{diffusivity}} + \underbrace{\kappa_h (-1)^{n_h + 1} \nabla^{2n_h} c}_{\textrm{hyper-diffusivity}} \ ,
 ```
 
 where ``\bm{u} = (u, v)`` is the two-dimensional advecting flow, ``\kappa`` the ``x``-diffusivity and ``\eta``
 is the ``y``-diffusivity. If ``\eta`` is not defined then by default it is set to have the same value as
-``\kappa``.
+``\kappa``. See [`TracerAdvectionDiffusion.Problem`]
 
 For 3D problems the tracer concentration ``c(\boldsymbol{x}, t)`` evolves under:
 
 ```math
-\partial_t c + \bm{u} \bm{\cdot} \bm{\nabla} c = \underbrace{\kappa \partial_x^2 c + \eta \partial_y^2 c + \ell \partial_z^2 c}_{\textrm{diffusivity}} + \underbrace{\kappa_h (-1)^{n_h + 1} \nabla^{2n_{h}}c}_{\textrm{hyper-diffusivity}} \ ,
+\partial_t c + \bm{u} \bm{\cdot} \bm{\nabla} c = \underbrace{\kappa \partial_x^2 c + \eta \partial_y^2 c + \ell \partial_z^2 c}_{\textrm{diffusivity}} + \underbrace{\kappa_h (-1)^{n_h + 1} \nabla^{2n_h} c}_{\textrm{hyper-diffusivity}} \ ,
 ```
 
 where ``\bm{u} = (u, v, w)`` is the three-dimensional advecting flow, ``\kappa`` the ``x``-diffusivity,
