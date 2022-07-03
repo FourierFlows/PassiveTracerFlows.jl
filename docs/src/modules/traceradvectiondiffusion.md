@@ -11,7 +11,7 @@ For 1D problems the tracer concentration ``c(x, t)`` evolves under:
 \partial_t c + u \partial_x c = \underbrace{\kappa \partial_x^2 c}_{\textrm{diffusivity}} + \underbrace{\kappa_h (-1)^{n_h + 1} \partial_x^{2n_{h}}c}_{\textrm{hyper-diffusivity}} \ ,
 ```
 
-where ``u(x, t)`` is the advecting flow and ``\kappa`` the diffusivity. The advecting flow can be either compressible or incompressible. 
+where ``u(x, t)`` is the advecting flow and ``\kappa`` the diffusivity.
 
 For 2D problems the tracer concentration ``c(\boldsymbol{x}, t)`` evolves under:
 
@@ -21,8 +21,7 @@ For 2D problems the tracer concentration ``c(\boldsymbol{x}, t)`` evolves under:
 
 where ``\bm{u} = (u, v)`` is the two-dimensional advecting flow, ``\kappa`` the ``x``-diffusivity and ``\eta``
 is the ``y``-diffusivity. If ``\eta`` is not defined then by default it is set to have the same value as
-``\kappa``. The advecting flow can be either compressible or incompressible. 
-
+``\kappa``.
 
 For 3D problems the tracer concentration ``c(\boldsymbol{x}, t)`` evolves under:
 
@@ -32,8 +31,9 @@ For 3D problems the tracer concentration ``c(\boldsymbol{x}, t)`` evolves under:
 
 where ``\bm{u} = (u, v, w)`` is the three-dimensional advecting flow, ``\kappa`` the ``x``-diffusivity,
 ``\eta`` is the ``y``-diffusivity, and ``\ell`` the ``z``-diffusivity. If ``\eta`` or ``\ell`` are not
-defined then by default are set to have the same value as ``\kappa``. The advecting flow can be either
-compressible or incompressible. 
+defined then by default are set to have the same value as ``\kappa``.
+
+The advecting flow can be either compressible or incompressible. 
 
 
 ### Implementation
