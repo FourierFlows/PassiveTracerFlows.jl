@@ -8,7 +8,7 @@ Public = false
 Order = [:type]
 ```
 
-## Private types in module `PassiveTracerFlows`:
+## Private types in module `TracerAdvectionDiffusion`:
 
 ```@autodocs
 Modules = [PassiveTracerFlows.TracerAdvectionDiffusion]
