@@ -9,12 +9,12 @@
 
 # ```julia
 # using Pkg
-# pkg.add(["PassiveTracerFlows", "Printf", "Plots", "JLD2"])
+# pkg.add(["PassiveTracerFlows", "Printf", "CairoMakie", "JLD2"])
 # ```
 #
 # ## Let's begin
 # First load packages needed to run this example.
-using PassiveTracerFlows, Printf, Plots, JLD2
+using PassiveTracerFlows, Printf, CairoMakie, JLD2
 using Random: seed!
 
 # ## Choosing a device: CPU or GPU
@@ -170,37 +170,39 @@ c = [file["snapshots/concentration/$i"][:, :, layer] for i ∈ iterations]
 nothing # hide
 
 # We normalize all streamfunctions to have maximum absolute value `amplitude / 5`.
-for i in 1:length(ψ)
+for i in 1:lastindex(ψ)
   ψ[i] *= (amplitude / 5) / maximum(abs, ψ[i])
 end
 
 x,  y  = file["grid/x"],  file["grid/y"]
 Lx, Ly = file["grid/Lx"], file["grid/Ly"]
 
-plot_args = (xlabel = "x",
-             ylabel = "y",
-             aspectratio = 1,
-             framestyle = :box,
-             xlims = (-Lx/2, Lx/2),
-             ylims = (-Ly/2, Ly/2),
-             legend = :false,
-             clims = (-amplitude/5, amplitude/5),
-             colorbar_title = "\n concentration",
-             color = :balance)
+n = Observable(1)
 
-p = heatmap(x, y, Array(c[1]'), title = "concentration, t = " * @sprintf("%.2f", t[1]); plot_args...)
-contour!(p, x, y, Array(ψ[1]'), levels = 0.15:0.3:1.5, lw=2, c=:grey, ls=:solid, alpha=0.5)
-contour!(p, x, y, Array(ψ[1]'), levels = -0.15:-0.3:-1.5, lw=2, c=:grey, ls=:dash, alpha=0.5)
+c_anim = @lift c[$n]
+ψ_anim = @lift ψ[$n]
+title = @lift @sprintf("concentration, t = %s", t[$n])
+
+fig = Figure(resolution = (700, 700))
+ax = Axis(fig[1, 1], 
+            xlabel = "x",
+            ylabel = "y",
+            aspect = 1,
+            title = title, 
+            limits = ((-Lx/2, Lx/2), (-Ly/2, Ly/2)))
+
+hm = heatmap!(ax, x, y, c_anim; colormap = :balance, colorrange = (-amplitude/5, amplitude/5))
+contour!(ax, x, y, ψ_anim; levels = 0.15:0.3:1.5, color = :grey, linestyle = :solid, alpha = 0.5)
+contour!(ax, x, y, ψ_anim; levels = -0.15:-0.3:-1.5, color = :grey, linestyle = :dash, alpha = 0.5)
 
 nothing # hide
 
 # Create a movie of the tracer with the streamlines.
 
-anim = @animate for i ∈ 1:length(t)
-  p[1][:title] = "concentration, t = " * @sprintf("%.2f", t[i])
-  p[1][1][:z] = Array(c[i])
-  p[1][2][:z] = Array(ψ[i])
-  p[1][3][:z] = Array(ψ[i])
+frames = 1:length(t)
+record(fig, "turbulentflow_advection-diffusion.mp4", frames, framerate = 18) do i
+    n[] = i
 end
 
-mp4(anim, "turbulentflow_advection-diffusion.mp4", fps = 12)
+nothing # hide
+# ![](turbulentflow_advection-diffusion.mp4)
