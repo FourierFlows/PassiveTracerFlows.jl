@@ -9,12 +9,12 @@
 
 # ```julia
 # using Pkg
-# pkg.add(["PassiveTracerFlows", "Printf", "Plots", "JLD2"])
+# pkg.add(["PassiveTracerFlows", "Printf", "CairoMakie", "JLD2"])
 # ```
 #
 # ## Let's begin
 # First load packages needed to run this example.
-using PassiveTracerFlows, Plots, Printf, JLD2, LinearAlgebra
+using PassiveTracerFlows, CairoMakie, Printf, JLD2, LinearAlgebra
 
 # ## Choosing a device: CPU or GPU
 
@@ -107,24 +107,24 @@ nothing # hide
 # Set up the plotting arguments and look at the initial concentration.
 x, Lx  = file["grid/x"], file["grid/Lx"]
 
-plot_args = (xlabel = "x",
-             ylabel = "c",
-             framestyle = :box,
-             xlims = (-Lx/2, Lx/2),
-             ylims = (0, maximum(c[1])),
-             legend = :false,
-             color = :balance)
+n = Observable(1)
+c_anim = @lift c[$n]
+title = @lift sprintf("concentration, t = %s", t[$n])
 
-p = plot(x, Array(c[1]);
-         title = "concentration, t = " * @sprintf("%.2f", t[1]),
-         plot_args...)
-nothing # hide
+fig = Figure(resolution = (600, 600))
+ax = Axis(fig[1, 1],
+          xlabel = "x",
+          ylabel = "c",
+          limits = ((-Lx/2, Lx/2), (0, maximum(c[1]))))
 
-# Now, we create a movie of the tracer concentration being advected and  diffused.
+lines!(ax, x, c_anim)
 
-anim = @animate for i ∈ 1:length(t)
-  p[1][:title] = "concentration, t = " * @sprintf("%.2f", t[i])
-  p[1][1][:y] = Array(c[i])
+# Now, we create a movie of the tracer concentration being advected and diffused.
+
+frames = 1:length(t)
+record(fig, "1D_advection-diffusion.mp4", frames, framerate = 18) do i
+    n[] = i
 end
 
-mp4(anim, "1D_advection-diffusion.mp4", fps = 12)
+nothing # hide
+# ![](1D_advection-diffusion.mp4)

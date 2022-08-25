@@ -2,6 +2,7 @@ using
   Documenter,
   Literate,
   Plots,   # to not capture precompilation output
+  CairoMakie,
   PassiveTracerFlows
 
 # Gotta set this environment variable when using the GR run-time on Travis CI.
