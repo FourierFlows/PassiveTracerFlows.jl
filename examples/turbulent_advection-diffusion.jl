@@ -203,7 +203,7 @@ nothing # hide
 # Create a movie of the tracer with the streamlines.
 
 frames = 1:length(t)
-record(fig, "turbulentflow_advection-diffusion.mp4", frames, framerate = 18) do i
+record(fig, "turbulentflow_advection-diffusion.mp4", frames, framerate = 12) do i
     n[] = i
 end
 
