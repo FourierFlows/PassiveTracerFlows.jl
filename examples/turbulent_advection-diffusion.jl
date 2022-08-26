@@ -188,7 +188,7 @@ ax = Axis(fig[1, 1],
           xlabel = "x",
           ylabel = "y",
           aspect = 1,
-          title = title, 
+          title = title,
           limits = ((-Lx/2, Lx/2), (-Ly/2, Ly/2)))
 
 hm = heatmap!(ax, x, y, c_anim;
