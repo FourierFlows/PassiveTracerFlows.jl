@@ -134,3 +134,5 @@ record(fig, "cellularflow_advection-diffusion.mp4", frames, framerate = 12) do j
   stepforward!(prob, nsubs)
   TracerAdvectionDiffusion.updatevars!(prob)
 end
+
+# ![](cellularflow_advection-diffusion.mp4)
