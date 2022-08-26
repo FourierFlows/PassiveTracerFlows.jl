@@ -128,4 +128,5 @@ record(fig, "1D_advection-diffusion.mp4", frames, framerate = 18) do i
 end
 
 nothing # hide
+
 # ![](1D_advection-diffusion.mp4)

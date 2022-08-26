@@ -208,4 +208,5 @@ record(fig, "turbulentflow_advection-diffusion.mp4", frames, framerate = 18) do 
 end
 
 nothing # hide
+
 # ![](turbulentflow_advection-diffusion.mp4)
