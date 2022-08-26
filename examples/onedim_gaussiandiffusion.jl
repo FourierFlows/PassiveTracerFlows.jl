@@ -38,7 +38,8 @@ L = 2π       # domain size
 nothing # hide
 
 # ## Flow
-# We set a constant background flow and pass this to `OneDAdvectingFlow` with `steadyflow = true` to indicate the flow is not time dependent.
+# We set a constant background flow and pass this to `OneDAdvectingFlow` with `steadyflow = true` to
+# indicate the flow is not time dependent.
 u(x) = 0.05
 advecting_flow = OneDAdvectingFlow(; u, steadyflow = true)
 
@@ -47,7 +48,7 @@ advecting_flow = OneDAdvectingFlow(; u, steadyflow = true)
 prob = TracerAdvectionDiffusion.Problem(dev, advecting_flow; nx=n, Lx=L, κ, dt, stepper)
 nothing # hide
 
-# and define some shortcuts
+# and define some shortcuts.
 sol, clock, vars, params, grid = prob.sol, prob.clock, prob.vars, prob.params, prob.grid
 x = grid.x
 
@@ -105,7 +106,7 @@ c = [file["snapshots/concentration/$i"] for i ∈ iterations]
 nothing # hide
 
 # Set up the plotting arguments and look at the initial concentration.
-x, Lx  = file["grid/x"], file["grid/Lx"]
+x, Lx = file["grid/x"], file["grid/Lx"]
 
 n = Observable(1)
 c_anim = @lift c[$n]
@@ -117,7 +118,7 @@ ax = Axis(fig[1, 1],
           ylabel = "c",
           limits = ((-Lx/2, Lx/2), (0, maximum(c[1]))))
 
-lines!(ax, x, c_anim)
+lines!(ax, x, c_anim; linewidth = 4)
 
 # Now, we create a movie of the tracer concentration being advected and diffused.
 
