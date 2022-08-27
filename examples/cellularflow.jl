@@ -85,10 +85,10 @@ nothing # hide
 
 # ## Time-stepping the `Problem` forward
 
-# We want to time-step tthe `Problem` forward in time but, at the same time, we'd like
+# We want to step the `Problem` forward in time and, whilst doing so, we'd like
 # to produce an animation of the tracer concentration.
 #
-# First we create a figure using `Observable`s.
+# First we create a figure using [`Observable`](https://makie.juliaplots.org/stable/documentation/nodes/)s.
 
 c_anim = Observable(vars.c)
 title = Observable(@sprintf("concentration, t = %.2f", clock.t))
