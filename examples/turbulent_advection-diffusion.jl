@@ -81,7 +81,7 @@ nothing # hide
 nsteps = 4000                    # total number of time-steps
 tracer_release_time = 25.0       # run flow for some time before releasing tracer
 
-ADprob = TracerAdvectionDiffusion.Problem(dev, MQGprob; κ, stepper, tracer_release_time)
+ADprob = TracerAdvectionDiffusion.Problem(MQGprob; κ, stepper, tracer_release_time)
 
 # Some shortcuts for the advection-diffusion problem:
 sol, clock, vars, params, grid = ADprob.sol, ADprob.clock, ADprob.vars, ADprob.params, ADprob.grid

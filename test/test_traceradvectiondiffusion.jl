@@ -333,7 +333,7 @@ function test_diffusion_multilayerqg(stepper, dt, tfinal, dev::Device=CPU())
     error("tfinal is not multiple of dt")
   end
 
-  ADprob = TracerAdvectionDiffusion.Problem(dev, MQGprob; κ, stepper, tracer_release_time)
+  ADprob = TracerAdvectionDiffusion.Problem(MQGprob; κ, stepper, tracer_release_time)
   sol, vs, pr, gr = ADprob.sol, ADprob.vars, ADprob.params, ADprob.grid
   x, y = gridpoints(gr)
 

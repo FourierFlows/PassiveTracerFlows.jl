@@ -118,14 +118,14 @@ The dimensionality of the problem is inferred from the type of `advecting_flow` 
 * `advecting_flow::TwoDAdvectingFlow` for 2D advection-diffusion problem,
 * `advecting_flow::ThreeDAdvectingFlow` for 3D advection-diffusion problem.
 """
-function Problem(dev::Device=CPU(), advecting_flow::OneDAdvectingFlow;
+function Problem(dev::Device, advecting_flow::OneDAdvectingFlow;
                      nx = 128,
                      Lx = 2π,
                       κ = 0.1,
                      dt = 0.01,
                 stepper = "RK4",
                       T = Float64
-                )
+                 )
 
   grid = OneDGrid(dev; nx, Lx, T)
   
@@ -140,7 +140,7 @@ function Problem(dev::Device=CPU(), advecting_flow::OneDAdvectingFlow;
   return FourierFlows.Problem(equation, stepper, dt, grid, vars, params)
 end
 
-function Problem(dev::Device=CPU(), advecting_flow::TwoDAdvectingFlow;
+function Problem(dev::Device, advecting_flow::TwoDAdvectingFlow;
                      nx = 128,
                      Lx = 2π,
                      ny = nx,
@@ -150,7 +150,7 @@ function Problem(dev::Device=CPU(), advecting_flow::TwoDAdvectingFlow;
                      dt = 0.01,
                 stepper = "RK4",
                       T = Float64
-                )
+                 )
   
   grid = TwoDGrid(dev; nx, Lx, ny, Ly, T)
 
@@ -165,7 +165,7 @@ function Problem(dev::Device=CPU(), advecting_flow::TwoDAdvectingFlow;
   return FourierFlows.Problem(equation, stepper, dt, grid, vars, params)
 end
 
-function Problem(dev::Device=CPU(), advecting_flow::ThreeDAdvectingFlow;
+function Problem(dev::Device, advecting_flow::ThreeDAdvectingFlow;
                     nx = 128,
                     Lx = 2π,
                     ny = nx,
@@ -178,7 +178,7 @@ function Problem(dev::Device=CPU(), advecting_flow::ThreeDAdvectingFlow;
                     dt = 0.01,
                 stepper = "RK4",
                     T = Float64
-                )
+                 )
 
   grid = ThreeDGrid(dev; nx, Lx, ny, Ly, nz, Lz, T)
 
@@ -200,15 +200,15 @@ Construct a constant diffusivity problem on device `dev` using the flow from a
 `GeophysicalFlows.MultiLayerQG` problem as the advecting flow. The device `CPU()`
 is set as the default device.
 """
-function Problem(dev::Device=CPU(), MQGprob::FourierFlows.Problem;
+function Problem(MQGprob::FourierFlows.Problem;
                      κ = 0.1,
                      η = κ,
                stepper = "FilteredRK4",
    tracer_release_time = 0
-                )
+                 )
 
   grid = MQGprob.grid
-  
+
   tracer_release_time < 0 && throw(ArgumentError("tracer_release_time must be non-negative!"))
 
   if tracer_release_time > 0
