@@ -71,7 +71,7 @@ withenv("GITHUB_REPOSITORY" => "FourierFlows/PassiveTracerFlowsDocumentation") d
   deploydocs(       repo = "github.com/FourierFlows/PassiveTracerFlowsDocumentation.git",
                 versions = ["stable" => "v^", "v#.#.#", "dev" => "dev"],
             push_preview = false,
-              force_push = true,
+               forcepush = true,
                devbranch = "main"
             )
 end
