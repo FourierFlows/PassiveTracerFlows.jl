@@ -90,7 +90,7 @@ nothing # hide
 #
 # First we create a figure using [`Observable`](https://makie.juliaplots.org/stable/documentation/nodes/)s.
 
-c_anim = Observable(vars.c)
+c_anim = Observable(Array(vars.c))
 title = Observable(@sprintf("concentration, t = %.2f", clock.t))
 
 Lx, Ly = grid.Lx, grid.Ly
@@ -128,7 +128,7 @@ record(fig, "cellularflow_advection-diffusion.mp4", frames, framerate = 12) do j
       println(log)
     end
 
-  c_anim[] = Array(vars.c)
+  c_anim[] = vars.c
   title[] = @sprintf("concentration, t = %.2f", clock.t)
 
   stepforward!(prob, nsubs)

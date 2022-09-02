@@ -97,7 +97,7 @@ gaussian(x, y, σ) = exp(-(x^2 + y^2) / 2σ^2)
 amplitude, spread = 10, 0.15
 c₀ = [amplitude * gaussian(x[i], y[j], spread) for j=1:grid.ny, i=1:grid.nx]
 
-TracerAdvectionDiffusion.set_c!(ADprob, device_array(dev)(c₀))
+TracerAdvectionDiffusion.set_c!(ADprob, c₀)
 
 # ## Saving output
 #
