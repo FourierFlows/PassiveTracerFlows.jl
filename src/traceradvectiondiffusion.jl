@@ -206,9 +206,8 @@ function Problem(dev::Device=CPU(), MQGprob::FourierFlows.Problem;
                stepper = "FilteredRK4",
    tracer_release_time = 0
                 )
-  Lx, Ly = MQGprob.grid.Lx, MQGprob.grid.Ly
-  nx, ny = MQGprob.grid.nx, MQGprob.grid.ny
-  grid = TwoDGrid(dev; nx, Lx, ny, Ly)
+
+  grid = MQGprob.grid
   
   tracer_release_time < 0 && throw(ArgumentError("tracer_release_time must be non-negative!"))
 
