@@ -820,8 +820,10 @@ updatevars!(prob) = updatevars!(prob.params, prob.vars, prob.grid, prob.sol)
 Set the solution `sol` as the transform of `c` and update variables `vars`.
 """
 function set_c!(sol, params::Union{AbstractTimeVaryingFlowParams, AbstractSteadyFlowParams}, vars, grid, c)
-  mul!(sol, grid.rfftplan, c)
-  
+  dev = grid.device
+
+  mul!(sol, grid.rfftplan, device_array(dev)(c))
+
   updatevars!(params, vars, grid, sol)
   
   return nothing
@@ -836,8 +838,9 @@ advect the tracer.
 """
 function set_c!(sol, params::AbstractTurbulentFlowParams, vars, grid, c)
   nlayers = numberoflayers(params.MQGprob.params)
+  dev = grid.device
   
-  C = @CUDA.allowscalar repeat(c, 1, 1, nlayers)
+  C = @CUDA.allowscalar repeat(device_array(dev)(c), 1, 1, nlayers)
   fwdtransform!(sol, C, params.MQGprob.params)
   updatevars!(params, vars, grid, sol)
 
