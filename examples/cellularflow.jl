@@ -47,7 +47,7 @@ nothing # hide
 # from a streamfunction ``ψ(x, y) = ψ₀ \cos(x) \cos(y)`` as ``(u, v) = (-∂_y ψ, ∂_x ψ)``.
 # The cellular flow is then passed into the `TwoDAdvectingFlow` constructor with `steadyflow = true`
 # to indicate that the flow is not time dependent.
-grid = TwoDGrid(n, L)
+grid = TwoDGrid(dev; n, L)
 
 ψ₀ = 0.2
 mx, my = 1, 1
