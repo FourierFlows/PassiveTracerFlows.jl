@@ -27,7 +27,7 @@ nothing # hide
 
 # ## Numerical parameters and time-stepping parameters
 
-     nx = 128            # 2D resolution = n²
+     nx = 128            # 2D resolution = nx²
 stepper = "RK4"          # timestepper
      dt = 0.02           # timestep
  nsteps = 800            # total number of time-steps
