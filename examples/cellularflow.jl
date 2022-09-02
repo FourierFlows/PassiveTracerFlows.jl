@@ -37,7 +37,7 @@ nothing # hide
 
 # ## Numerical parameters and time-stepping parameters
 
-Lx = 2π        # domain size
+Lx = 2π       # domain size
 κ = 0.002     # diffusivity
 nothing # hide
 
