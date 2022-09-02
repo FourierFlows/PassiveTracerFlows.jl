@@ -333,7 +333,7 @@ function test_diffusion_multilayerqg(stepper, dt, tfinal, dev::Device=CPU())
     error("tfinal is not multiple of dt")
   end
 
-  ADprob = TracerAdvectionDiffusion.Problem(dev, MQGprob; κ, stepper, tracer_release_time)
+  ADprob = TracerAdvectionDiffusion.Problem(MQGprob; κ, stepper, tracer_release_time)
   sol, vs, pr, gr = ADprob.sol, ADprob.vars, ADprob.params, ADprob.grid
   x, y = gridpoints(gr)
 
@@ -411,16 +411,16 @@ function test_hyperdiffusion(stepper, dt, tfinal, dev::Device=CPU(); steadyflow 
     error("tfinal is not multiple of dt")
   end
 
-  gr = TwoDGrid(dev, nx, Lx)
+  gr = TwoDGrid(dev; nx, Lx)
   x, y = gridpoints(gr)
 
   u(x, y) = 0.0
   v(x, y) = 0.0
 
-  vs = TracerAdvectionDiffusion.Vars(dev, gr)
+  vs = TracerAdvectionDiffusion.Vars(gr)
   pr = TracerAdvectionDiffusion.ConstDiffSteadyFlowParams(η, κ, κh, nκh, u, v, gr)
-  eq = TracerAdvectionDiffusion.Equation(dev, pr, gr)
-  prob = FourierFlows.Problem(eq, stepper, dt, gr, vs, pr, dev)
+  eq = TracerAdvectionDiffusion.Equation(pr, gr)
+  prob = FourierFlows.Problem(eq, stepper, dt, gr, vs, pr)
 
   c0ampl, σ = 0.1, 0.1
   c0func(x, y) = c0ampl * exp(-(x^2 + y^2) / 2σ^2)

@@ -45,14 +45,14 @@ See `examples/` for example scripts.
 
 ## Modules
 
-* `TracerAdvectionDiffusion`: advection-diffusion of a passive tracer in 1D, 2D, or 3D domains.
+* [`TracerAdvectionDiffusion`](https://fourierflows.github.io/PassiveTracerFlowsDocumentation/stable/modules/traceradvectiondiffusion/): advection-diffusion of a passive tracer in 1D, 2D, or 3D domains.
 
 
 ## Cite
 
 The code is citable via [zenodo](https://zenodo.org). Please cite as:
 
-> Navid C. Constantinou, Josef I. Bisits, and Gregory L. Wagner (2022). FourierFlows/PassiveTracerFlows.jl: PassiveTracerFlows v0.8.1 (Version v0.8.1). Zenodo. [https://doi.org/10.5281/zenodo.2535983](https://doi.org/10.5281/zenodo.2535983)
+> Navid C. Constantinou, Josef I. Bisits, and Gregory L. Wagner (2022). FourierFlows/PassiveTracerFlows.jl: PassiveTracerFlows v0.9.0 (Version v0.9.0). Zenodo. [https://doi.org/10.5281/zenodo.2535983](https://doi.org/10.5281/zenodo.2535983)
 
 ## Contributing
 

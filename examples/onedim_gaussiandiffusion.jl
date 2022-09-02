@@ -9,7 +9,7 @@
 
 # ```julia
 # using Pkg
-# pkg.add(["PassiveTracerFlows", "Printf", "CairoMakie", "JLD2"])
+# pkg.add(["PassiveTracerFlows", "CairoMakie", "JLD2"])
 # ```
 #
 # ## Let's begin
@@ -109,7 +109,7 @@ nothing # hide
 x, Lx = file["grid/x"], file["grid/Lx"]
 
 n = Observable(1)
-c_anim = @lift c[$n]
+c_anim = @lift Array(c[$n])
 title = @lift @sprintf("concentration, t = %s", t[$n])
 
 fig = Figure(resolution = (600, 600))

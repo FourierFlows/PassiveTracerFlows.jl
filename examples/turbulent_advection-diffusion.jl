@@ -9,7 +9,7 @@
 
 # ```julia
 # using Pkg
-# pkg.add(["PassiveTracerFlows", "Printf", "CairoMakie", "JLD2"])
+# pkg.add(["PassiveTracerFlows", "CairoMakie", "JLD2"])
 # ```
 #
 # ## Let's begin
@@ -60,7 +60,7 @@ nx, ny = MQGprob.grid.nx, MQGprob.grid.ny
 
 # Initial conditions                        
 seed!(1234) # reset of the random number generator for reproducibility
-q₀  = 1e-2 * ArrayType(dev)(randn((nx, ny, nlayers)))
+q₀  = 1e-2 * device_array(dev)(randn((nx, ny, nlayers)))
 q₀h = MQGprob.timestepper.filter .* rfft(q₀, (1, 2)) # apply rfft  only in dims=1, 2
 q₀  = irfft(q₀h, nx, (1, 2))                         # apply irfft only in dims=1, 2
 
@@ -72,16 +72,16 @@ nothing # hide
 # Now that we have a `MultiLayerQG.Problem` setup to generate our turbulent flow, we
 # setup an advection-diffusion simulation. This is done by passing the `MultiLayerQG.Problem`
 # as an argument to `TracerAdvectionDiffusion.Problem` which sets up an advection-diffusion problem
-# with same parameters where applicable. We also need to pass a value for the constant diffusivity `κ`,
-# the `stepper` used to step the problem forward and when we want the tracer released into the flow.
-# We let the flow evolve up to `t = tracer_release_time` and then release the tracer and let it
-# evolve with the flow.
+# with same parameters where applicable and also on the same device (CPU/GPU). We also need to pass
+# a value for the constant diffusivity `κ`, the `stepper` used to step the problem forward and when
+# we want the tracer released into the flow. We let the flow evolve up to `t = tracer_release_time`
+# and then release the tracer and let it evolve with the flow.
 
 κ = 0.002                        # constant diffusivity
 nsteps = 4000                    # total number of time-steps
 tracer_release_time = 25.0       # run flow for some time before releasing tracer
 
-ADprob = TracerAdvectionDiffusion.Problem(dev, MQGprob; κ, stepper, tracer_release_time)
+ADprob = TracerAdvectionDiffusion.Problem(MQGprob; κ, stepper, tracer_release_time)
 
 # Some shortcuts for the advection-diffusion problem:
 sol, clock, vars, params, grid = ADprob.sol, ADprob.clock, ADprob.vars, ADprob.params, ADprob.grid
@@ -91,7 +91,7 @@ x, y = grid.x, grid.y
 #
 # We have a two layer system so we advect-diffuse the tracer in both layers.
 # To do this we set the initial condition for tracer concetration as a Gaussian centered at the origin.
-# Then we create some shortcuts for the `TracerAdvectionDiffusion.Problem`.
+
 gaussian(x, y, σ) = exp(-(x^2 + y^2) / 2σ^2)
 
 amplitude, spread = 10, 0.15
@@ -179,8 +179,8 @@ Lx, Ly = file["grid/Lx"], file["grid/Ly"]
 
 n = Observable(1)
 
-c_anim = @lift c[$n]
-ψ_anim = @lift ψ[$n]
+c_anim = @lift Array(c[$n])
+ψ_anim = @lift Array(ψ[$n])
 title = @lift @sprintf("concentration, t = %.2f", t[$n])
 
 fig = Figure(resolution = (600, 600))

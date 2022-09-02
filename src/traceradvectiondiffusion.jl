@@ -109,37 +109,38 @@ ThreeDAdvectingFlow(; u=noflow, v=noflow, w=noflow, steadyflow=true) = ThreeDAdv
 # --
 
 """
-    Problem(dev, advecting_flow; parameters...)
+    Problem(dev::Device=CPU(), advecting_flow; parameters...)
 
 Construct a constant diffusivity problem with steady or time-varying `advecting_flow` on device `dev`.
+The default device is the `CPU()`, to use the `GPU` pass the argument to the function
 The dimensionality of the problem is inferred from the type of `advecting_flow` provided:
 * `advecting_flow::OneDAdvectingFlow` for 1D advection-diffusion problem,
 * `advecting_flow::TwoDAdvectingFlow` for 2D advection-diffusion problem,
 * `advecting_flow::ThreeDAdvectingFlow` for 3D advection-diffusion problem.
 """
-function Problem(dev, advecting_flow::OneDAdvectingFlow;
+function Problem(dev::Device, advecting_flow::OneDAdvectingFlow;
                      nx = 128,
                      Lx = 2π,
                       κ = 0.1,
                      dt = 0.01,
                 stepper = "RK4",
                       T = Float64
-                )
+                 )
 
-  grid = OneDGrid(dev, nx, Lx; T)
+  grid = OneDGrid(dev; nx, Lx, T)
   
   params = advecting_flow.steadyflow==true ?
            ConstDiffSteadyFlowParams(κ, advecting_flow.u, grid::OneDGrid) :
            ConstDiffTimeVaryingFlowParams(κ, advecting_flow.u)
 
-  vars = Vars(dev, grid; T)
+  vars = Vars(grid)
 
-  equation = Equation(dev, params, grid)
+  equation = Equation(params, grid)
 
-  return FourierFlows.Problem(equation, stepper, dt, grid, vars, params, dev)
+  return FourierFlows.Problem(equation, stepper, dt, grid, vars, params)
 end
 
-function Problem(dev, advecting_flow::TwoDAdvectingFlow;
+function Problem(dev::Device, advecting_flow::TwoDAdvectingFlow;
                      nx = 128,
                      Lx = 2π,
                      ny = nx,
@@ -149,22 +150,22 @@ function Problem(dev, advecting_flow::TwoDAdvectingFlow;
                      dt = 0.01,
                 stepper = "RK4",
                       T = Float64
-                )
+                 )
   
-  grid = TwoDGrid(dev, nx, Lx, ny, Ly; T)
+  grid = TwoDGrid(dev; nx, Lx, ny, Ly, T)
 
   params = advecting_flow.steadyflow==true ?
            ConstDiffSteadyFlowParams(κ, η, advecting_flow.u, advecting_flow.v, grid::TwoDGrid) :
            ConstDiffTimeVaryingFlowParams(κ, η, advecting_flow.u, advecting_flow.v)
 
-  vars = Vars(dev, grid; T)
+  vars = Vars(grid)
 
-  equation = Equation(dev, params, grid)
+  equation = Equation(params, grid)
 
-  return FourierFlows.Problem(equation, stepper, dt, grid, vars, params, dev)
+  return FourierFlows.Problem(equation, stepper, dt, grid, vars, params)
 end
 
-function Problem(dev, advecting_flow::ThreeDAdvectingFlow;
+function Problem(dev::Device, advecting_flow::ThreeDAdvectingFlow;
                     nx = 128,
                     Lx = 2π,
                     ny = nx,
@@ -177,36 +178,37 @@ function Problem(dev, advecting_flow::ThreeDAdvectingFlow;
                     dt = 0.01,
                 stepper = "RK4",
                     T = Float64
-                )
+                 )
 
-  grid = ThreeDGrid(dev, nx, Lx, ny, Ly, nz, Lz; T)
+  grid = ThreeDGrid(dev; nx, Lx, ny, Ly, nz, Lz, T)
 
   params = advecting_flow.steadyflow==true ?
-  ConstDiffSteadyFlowParams(κ, η, ι, advecting_flow.u, advecting_flow.v, advecting_flow.w, grid::ThreeDGrid) :
-  ConstDiffTimeVaryingFlowParams(κ, η, ι, advecting_flow.u, advecting_flow.v, advecting_flow.w)
+           ConstDiffSteadyFlowParams(κ, η, ι, advecting_flow.u, advecting_flow.v, advecting_flow.w, grid::ThreeDGrid) :
+           ConstDiffTimeVaryingFlowParams(κ, η, ι, advecting_flow.u, advecting_flow.v, advecting_flow.w)
 
-  vars = Vars(dev, grid; T)
+  vars = Vars(grid)
 
-  equation = Equation(dev, params, grid)
+  equation = Equation(params, grid)
 
-  return FourierFlows.Problem(equation, stepper, dt, grid, vars, params, dev)
+  return FourierFlows.Problem(equation, stepper, dt, grid, vars, params)
 end
 
 """
-    Problem(dev, MQGprob::FourierFlows.Problem; parameters...)
+    Problem(dev::Device=CPU(), MQGprob::FourierFlows.Problem; parameters...)
 
 Construct a constant diffusivity problem on device `dev` using the flow from a
-`GeophysicalFlows.MultiLayerQG` problem as the advecting flow.
+`GeophysicalFlows.MultiLayerQG` problem as the advecting flow. The device `CPU()`
+is set as the default device.
 """
-function Problem(dev, MQGprob::FourierFlows.Problem;
+function Problem(MQGprob::FourierFlows.Problem;
                      κ = 0.1,
                      η = κ,
                stepper = "FilteredRK4",
    tracer_release_time = 0
-                )
-  
+                 )
+
   grid = MQGprob.grid
-  
+
   tracer_release_time < 0 && throw(ArgumentError("tracer_release_time must be non-negative!"))
 
   if tracer_release_time > 0
@@ -215,12 +217,14 @@ function Problem(dev, MQGprob::FourierFlows.Problem;
   end
 
   params = ConstDiffTurbulentFlowParams(κ, η, tracer_release_time, MQGprob)
-  vars = Vars(dev, grid, MQGprob)
-  equation = Equation(dev, params, grid)
+
+  vars = Vars(grid, MQGprob)
+
+  equation = Equation(params, grid)
 
   dt = MQGprob.clock.dt
 
-  return FourierFlows.Problem(equation, stepper, dt, grid, vars, params, dev)
+  return FourierFlows.Problem(equation, stepper, dt, grid, vars, params)
 end
 
 # --
@@ -473,49 +477,63 @@ end
 
 Return the equation for constant diffusivity problem with `params` and `grid` on device `dev`.
 """
-function Equation(dev, params::ConstDiffTimeVaryingFlowParams1D, grid::OneDGrid)
+function Equation(params::ConstDiffTimeVaryingFlowParams1D, grid::OneDGrid)
+  dev = grid.device
+
   L = zeros(dev, eltype(grid), (grid.nkr))
   @. L = - params.κ * grid.kr^2 - params.κh * (grid.kr^2)^params.nκh
-  
+
   return FourierFlows.Equation(L, calcN!, grid)
 end
 
-function Equation(dev, params::ConstDiffTimeVaryingFlowParams2D, grid::TwoDGrid)
+function Equation(params::ConstDiffTimeVaryingFlowParams2D, grid::TwoDGrid)
+  dev = grid.device
+
   L = zeros(dev, eltype(grid), (grid.nkr, grid.nl))
   @. L = - params.κ * grid.kr^2 - params.η * grid.l^2 - params.κh * grid.Krsq^params.nκh
-  
+
   return FourierFlows.Equation(L, calcN!, grid)
 end
 
-function Equation(dev, params::ConstDiffTimeVaryingFlowParams3D, grid::ThreeDGrid)
+function Equation(params::ConstDiffTimeVaryingFlowParams3D, grid::ThreeDGrid)
+  dev = grid.device
+
   L = zeros(dev, eltype(grid), (grid.nkr, grid.nl, grid.nm))
   @. L = - params.κ * grid.kr^2 - params.η * grid.l^2 - params.ι * grid.m^2 - params.κh * grid.Krsq^params.nκh
-  
+
   return FourierFlows.Equation(L, calcN!, grid)
 end
 
-function Equation(dev, params::ConstDiffSteadyFlowParams1D, grid::OneDGrid)
+function Equation(params::ConstDiffSteadyFlowParams1D, grid::OneDGrid)
+  dev = grid.device
+
   L = zeros(dev, eltype(grid), (grid.nkr))
   @. L = - params.κ * grid.kr^2 - params.κh * (grid.kr^2)^params.nκh
-  
+
   return FourierFlows.Equation(L, calcN!, grid)
 end
 
-function Equation(dev, params::ConstDiffSteadyFlowParams2D, grid::TwoDGrid)
+function Equation(params::ConstDiffSteadyFlowParams2D, grid::TwoDGrid)
+  dev = grid.device
+
   L = zeros(dev, eltype(grid), (grid.nkr, grid.nl))
   @. L = - params.κ * grid.kr^2 - params.η * grid.l^2 - params.κh * grid.Krsq^params.nκh
-  
+
   return FourierFlows.Equation(L, calcN!, grid)
 end
 
-function Equation(dev, params::ConstDiffSteadyFlowParams3D, grid::ThreeDGrid)
+function Equation(params::ConstDiffSteadyFlowParams3D, grid::ThreeDGrid)
+  dev = grid.device
+
   L = zeros(dev, eltype(grid), (grid.nkr, grid.nl, grid.nm))
   @. L = - params.κ * grid.kr^2 - params.η * grid.l^2 - params.ι * grid.m^2 - params.κh * grid.Krsq^params.nκh
-  
+
   return FourierFlows.Equation(L, calcN!, grid)
 end
 
-function Equation(dev, params::ConstDiffTurbulentFlowParams, grid)
+function Equation(params::ConstDiffTurbulentFlowParams, grid)
+  dev = grid.device
+
   L = zeros(dev, eltype(grid), (grid.nkr, grid.nl, params.nlayers))
 
   for j in 1:params.nlayers
@@ -600,36 +618,44 @@ end
 
 Return the variables `vars` for a constant diffusivity problem on `grid` and device `dev`.
 """
-function Vars(::Dev, grid::OneDGrid; T=Float64) where Dev
+function Vars(grid::OneDGrid{T}) where T
+  Dev = typeof(grid.device)
+
   @devzeros Dev T (grid.nx) c cx
   @devzeros Dev Complex{T} (grid.nkr) ch cxh
     
   return Vars1D(c, cx, ch, cxh)
 end
 
-function Vars(::Dev, grid::TwoDGrid; T=Float64) where Dev
+function Vars(grid::TwoDGrid{T}) where T
+  Dev = typeof(grid.device)
+
   @devzeros Dev T (grid.nx, grid.ny) c cx cy
   @devzeros Dev Complex{T} (grid.nkr, grid.nl) ch cxh cyh
   
   return Vars2D(c, cx, cy, ch, cxh, cyh)
 end
 
-function Vars(::Dev, grid::ThreeDGrid; T=Float64) where Dev
+function Vars(grid::ThreeDGrid{T}) where T
+  Dev = typeof(grid.device)
+
   @devzeros Dev T (grid.nx, grid.ny, grid.nz) c cx cy cz
   @devzeros Dev Complex{T} (grid.nkr, grid.nl, grid.nm) ch cxh cyh czh
     
   return Vars3D(c, cx, cy, cz, ch, cxh, cyh, czh)
 end
 
-function Vars(dev::Dev, grid::AbstractGrid{T}, MQGprob::FourierFlows.Problem) where {Dev, T}
+function Vars(grid::AbstractGrid{T}, MQGprob::FourierFlows.Problem) where T
   nlayers = numberoflayers(MQGprob.params)
 
   if nlayers == 1
-    return Vars(dev, grid; T=T)
+    return Vars(grid)
   else
+    Dev = typeof(grid.device)
+
     @devzeros Dev T (grid.nx, grid.ny, nlayers) c cx cy
     @devzeros Dev Complex{T} (grid.nkr, grid.nl, nlayers) ch cxh cyh
-    
+
     return Vars2D(c, cx, cy, ch, cxh, cyh)
   end
 end
@@ -794,8 +820,10 @@ updatevars!(prob) = updatevars!(prob.params, prob.vars, prob.grid, prob.sol)
 Set the solution `sol` as the transform of `c` and update variables `vars`.
 """
 function set_c!(sol, params::Union{AbstractTimeVaryingFlowParams, AbstractSteadyFlowParams}, vars, grid, c)
-  mul!(sol, grid.rfftplan, c)
-  
+  dev = grid.device
+
+  mul!(sol, grid.rfftplan, device_array(dev)(c))
+
   updatevars!(params, vars, grid, sol)
   
   return nothing
@@ -808,10 +836,11 @@ Set the initial condition for tracer concentration in all layers of a
 `TracerAdvectionDiffusion.Problem` that uses a `MultiLayerQG` flow to 
 advect the tracer.
 """
-function set_c!(sol, params::AbstractTurbulentFlowParams, vars, grid::AbstractGrid{T}, c) where T
+function set_c!(sol, params::AbstractTurbulentFlowParams, vars, grid, c)
   nlayers = numberoflayers(params.MQGprob.params)
+  dev = grid.device
   
-  C = @CUDA.allowscalar repeat(c, 1, 1, nlayers)
+  C = @CUDA.allowscalar repeat(device_array(dev)(c), 1, 1, nlayers)
   fwdtransform!(sol, C, params.MQGprob.params)
   updatevars!(params, vars, grid, sol)
 
