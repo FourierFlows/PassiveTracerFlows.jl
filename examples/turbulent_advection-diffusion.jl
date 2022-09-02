@@ -60,7 +60,7 @@ nx, ny = MQGprob.grid.nx, MQGprob.grid.ny
 
 # Initial conditions                        
 seed!(1234) # reset of the random number generator for reproducibility
-q₀  = 1e-2 * ArrayType(dev)(randn((nx, ny, nlayers)))
+q₀  = 1e-2 * device_array(dev)(randn((nx, ny, nlayers)))
 q₀h = MQGprob.timestepper.filter .* rfft(q₀, (1, 2)) # apply rfft  only in dims=1, 2
 q₀  = irfft(q₀h, nx, (1, 2))                         # apply irfft only in dims=1, 2
 
