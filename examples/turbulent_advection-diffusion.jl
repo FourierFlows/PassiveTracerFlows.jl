@@ -9,7 +9,7 @@
 
 # ```julia
 # using Pkg
-# pkg.add(["PassiveTracerFlows", "Printf", "CairoMakie", "JLD2"])
+# pkg.add(["PassiveTracerFlows", "CairoMakie", "JLD2"])
 # ```
 #
 # ## Let's begin
@@ -72,10 +72,10 @@ nothing # hide
 # Now that we have a `MultiLayerQG.Problem` setup to generate our turbulent flow, we
 # setup an advection-diffusion simulation. This is done by passing the `MultiLayerQG.Problem`
 # as an argument to `TracerAdvectionDiffusion.Problem` which sets up an advection-diffusion problem
-# with same parameters where applicable. We also need to pass a value for the constant diffusivity `κ`,
-# the `stepper` used to step the problem forward and when we want the tracer released into the flow.
-# We let the flow evolve up to `t = tracer_release_time` and then release the tracer and let it
-# evolve with the flow.
+# with same parameters where applicable and also on the same device (CPU/GPU). We also need to pass
+# a value for the constant diffusivity `κ`, the `stepper` used to step the problem forward and when
+# we want the tracer released into the flow. We let the flow evolve up to `t = tracer_release_time`
+# and then release the tracer and let it evolve with the flow.
 
 κ = 0.002                        # constant diffusivity
 nsteps = 4000                    # total number of time-steps
@@ -91,13 +91,13 @@ x, y = grid.x, grid.y
 #
 # We have a two layer system so we advect-diffuse the tracer in both layers.
 # To do this we set the initial condition for tracer concetration as a Gaussian centered at the origin.
-# Then we create some shortcuts for the `TracerAdvectionDiffusion.Problem`.
+
 gaussian(x, y, σ) = exp(-(x^2 + y^2) / 2σ^2)
 
 amplitude, spread = 10, 0.15
 c₀ = [amplitude * gaussian(x[i], y[j], spread) for j=1:grid.ny, i=1:grid.nx]
 
-TracerAdvectionDiffusion.set_c!(ADprob, c₀)
+TracerAdvectionDiffusion.set_c!(ADprob, device_array(dev)(c₀))
 
 # ## Saving output
 #
@@ -179,8 +179,8 @@ Lx, Ly = file["grid/Lx"], file["grid/Ly"]
 
 n = Observable(1)
 
-c_anim = @lift c[$n]
-ψ_anim = @lift ψ[$n]
+c_anim = @lift Array(c[$n])
+ψ_anim = @lift Array(ψ[$n])
 title = @lift @sprintf("concentration, t = %.2f", t[$n])
 
 fig = Figure(resolution = (600, 600))
