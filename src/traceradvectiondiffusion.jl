@@ -498,21 +498,21 @@ function Equation(dev, params::ConstDiffSteadyFlowParams1D, grid::OneDGrid)
   L = zeros(dev, eltype(grid), (grid.nkr))
   @. L = - params.κ * grid.kr^2 - params.κh * (grid.kr^2)^params.nκh
   
-  return FourierFlows.Equation(L, calcN_steadyflow!, grid)
+  return FourierFlows.Equation(L, calcN!, grid)
 end
 
 function Equation(dev, params::ConstDiffSteadyFlowParams2D, grid::TwoDGrid)
   L = zeros(dev, eltype(grid), (grid.nkr, grid.nl))
   @. L = - params.κ * grid.kr^2 - params.η * grid.l^2 - params.κh * grid.Krsq^params.nκh
   
-  return FourierFlows.Equation(L, calcN_steadyflow!, grid)
+  return FourierFlows.Equation(L, calcN!, grid)
 end
 
 function Equation(dev, params::ConstDiffSteadyFlowParams3D, grid::ThreeDGrid)
   L = zeros(dev, eltype(grid), (grid.nkr, grid.nl, grid.nm))
   @. L = - params.κ * grid.kr^2 - params.η * grid.l^2 - params.ι * grid.m^2 - params.κh * grid.Krsq^params.nκh
   
-  return FourierFlows.Equation(L, calcN_steadyflow!, grid)
+  return FourierFlows.Equation(L, calcN!, grid)
 end
 
 function Equation(dev, params::ConstDiffTurbulentFlowParams, grid)
@@ -522,7 +522,7 @@ function Equation(dev, params::ConstDiffTurbulentFlowParams, grid)
       @. L[:, :, j] = - params.κ * grid.kr^2 - params.η * grid.l^2 - params.κh * grid.Krsq^params.nκh
   end
 
-  return FourierFlows.Equation(L, calcN_turbulentflow!, grid)
+  return FourierFlows.Equation(L, calcN!, grid)
 end
 
 # --
@@ -639,11 +639,10 @@ end
 # --
 # Solvers
 # --
-
 """
     calcN!(N, sol, t, clock, vars, params, grid)
 
-Calculate the advective terms for a tracer equation with constant diffusivity and time-varying flow.
+Calculate the advective terms for a constant diffusivity `problem` with `params` and on `grid`.
 """
 function calcN!(N, sol, t, clock, vars, params::AbstractTimeVaryingFlowParams, grid::OneDGrid)
   @. vars.cxh = im * grid.kr * sol
@@ -694,13 +693,7 @@ function calcN!(N, sol, t, clock, vars, params::AbstractTimeVaryingFlowParams, g
   return nothing
 end
 
-
-"""
-    calcN_steadyflow!(N, sol, t, clock, vars, params, grid)
-
-Calculate the advective terms for a tracer equation with constant diffusivity and time-constant flow.
-"""
-function calcN_steadyflow!(N, sol, t, clock, vars, params::AbstractSteadyFlowParams, grid::OneDGrid)
+function calcN!(N, sol, t, clock, vars, params::AbstractSteadyFlowParams, grid::OneDGrid)
   @. vars.cxh = im * grid.kr * sol
 
   ldiv!(vars.cx, grid.rfftplan, vars.cxh) # destroys vars.cxh when using fftw
@@ -712,7 +705,7 @@ function calcN_steadyflow!(N, sol, t, clock, vars, params::AbstractSteadyFlowPar
   return nothing
 end
 
-function calcN_steadyflow!(N, sol, t, clock, vars, params::AbstractSteadyFlowParams, grid::TwoDGrid)
+function calcN!(N, sol, t, clock, vars, params::AbstractSteadyFlowParams, grid::TwoDGrid)
   @. vars.cxh = im * grid.kr * sol
   @. vars.cyh = im * grid.l  * sol
 
@@ -727,7 +720,7 @@ function calcN_steadyflow!(N, sol, t, clock, vars, params::AbstractSteadyFlowPar
   return nothing
 end
 
-function calcN_steadyflow!(N, sol, t, clock, vars, params::AbstractSteadyFlowParams, grid::ThreeDGrid)
+function calcN!(N, sol, t, clock, vars, params::AbstractSteadyFlowParams, grid::ThreeDGrid)
   @. vars.cxh = im * grid.kr * sol
   @. vars.cyh = im * grid.l  * sol
   @. vars.czh = im * grid.m  * sol
@@ -744,12 +737,7 @@ function calcN_steadyflow!(N, sol, t, clock, vars, params::AbstractSteadyFlowPar
   return nothing
 end
 
-"""
-    calcN_turbulentflow!(N, solt, t, clock, vars, params::AbstractTurbulentFlowParams, grid)
-
-Calculate the advective terms for a tracer equation with constant diffusivity and turbulent `MultiLayerQG` flow.
-"""
-function calcN_turbulentflow!(N, sol, t, clock, vars, params::AbstractTurbulentFlowParams, grid)
+function calcN!(N, sol, t, clock, vars, params::AbstractTurbulentFlowParams, grid)
   @. vars.cxh = im * grid.kr * sol
   @. vars.cyh = im * grid.l  * sol
 
