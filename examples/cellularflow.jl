@@ -27,7 +27,7 @@ nothing # hide
 
 # ## Numerical parameters and time-stepping parameters
 
-      n = 128            # 2D resolution = n²
+     nx = 128            # 2D resolution = n²
 stepper = "RK4"          # timestepper
      dt = 0.02           # timestep
  nsteps = 800            # total number of time-steps
@@ -37,7 +37,7 @@ nothing # hide
 
 # ## Numerical parameters and time-stepping parameters
 
-L = 2π        # domain size
+Lx = 2π        # domain size
 κ = 0.002     # diffusivity
 nothing # hide
 
@@ -47,7 +47,7 @@ nothing # hide
 # from a streamfunction ``ψ(x, y) = ψ₀ \cos(x) \cos(y)`` as ``(u, v) = (-∂_y ψ, ∂_x ψ)``.
 # The cellular flow is then passed into the `TwoDAdvectingFlow` constructor with `steadyflow = true`
 # to indicate that the flow is not time dependent.
-grid = TwoDGrid(n, L)
+grid = TwoDGrid(dev; nx, Lx)
 
 ψ₀ = 0.2
 mx, my = 1, 1
@@ -62,7 +62,7 @@ nothing # hide
 
 # ## Problem setup
 # We initialize a `Problem` by providing a set of keyword arguments.
-prob = TracerAdvectionDiffusion.Problem(dev, advecting_flow; nx=n, Lx=L, κ, dt, stepper)
+prob = TracerAdvectionDiffusion.Problem(dev, advecting_flow; nx, Lx=Lx, κ, dt, stepper)
 nothing # hide
 
 # and define some shortcuts
