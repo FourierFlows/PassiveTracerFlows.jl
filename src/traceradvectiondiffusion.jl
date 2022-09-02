@@ -644,7 +644,6 @@ end
 
 Calculate the advective terms for a constant diffusivity `problem` with `params` and on `grid`.
 """
-
 function calcN!(N, sol, t, clock, vars, params::AbstractTimeVaryingFlowParams, grid::OneDGrid)
   @. vars.cxh = im * grid.kr * sol
 
