@@ -45,7 +45,7 @@ See `examples/` for example scripts.
 
 ## Modules
 
-* `TracerAdvectionDiffusion`: advection-diffusion of a passive tracer in 1D, 2D, or 3D domains.
+* [`TracerAdvectionDiffusion`](https://fourierflows.github.io/PassiveTracerFlowsDocumentation/stable/modules/traceradvectiondiffusion/): advection-diffusion of a passive tracer in 1D, 2D, or 3D domains.
 
 
 ## Cite
