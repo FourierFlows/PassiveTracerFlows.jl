@@ -14,7 +14,8 @@ const OUTPUT_DIR   = joinpath(@__DIR__, "src/literated")
 examples = [
     "onedim_gaussiandiffusion.jl",
     "cellularflow.jl",
-    "turbulent_advection-diffusion.jl"
+    "turbulent_advection-diffusion.jl",
+    "particle_advection.jl"
 ]
 
 for example in examples

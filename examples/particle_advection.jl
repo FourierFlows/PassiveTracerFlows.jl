@@ -1,6 +1,6 @@
 # # Particle advection in two dimensions
 #
-# This is an example demonstrating the advection of a particles in
+# This is an example demonstrating the advection of particles in
 # two dimensions. The flow field used is a *cat's eye flow*[^1].
 #
 # ## Install dependencies
@@ -34,7 +34,7 @@ nothing # hide
 # ## Numerical parameters and time-stepping parameters
 
 Lx = 2π       # domain size
- κ = 0         # diffusivity, makes this an advection only problem
+ κ = 0        # diffusivity, makes this an advection only problem
 nothing # hide
 
 
