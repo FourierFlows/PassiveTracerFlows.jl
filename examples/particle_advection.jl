@@ -56,7 +56,8 @@ advecting_flow = TwoDAdvectingFlow(; u, v, steadyflow = true)
 nothing # hide
 
 # ## Problem setup
-# We initialize a `Problem` by providing a set of keyword arguments.
+# We initialize a `Problem` by providing a set of keyword arguments. Again note that this will be an 
+# advection only problem as we have set the diffusivity, ``\kappa``, to zero
 prob = TracerAdvectionDiffusion.Problem(dev, advecting_flow; nx, Lx, κ, dt = Δt, stepper)
 
 # and define some shortcuts
@@ -75,11 +76,12 @@ for j ∈ 1:lastindex(pᵢ[:, 1])
 end
 
 TracerAdvectionDiffusion.set_c!(prob, p₀)
+nothing # hide
 
 # ## Time-stepping the `Problem` forward
 
 # We want to step the `Problem` forward in time and, whilst doing so, we'd like
-# to produce an animation of the particles being advected
+# to produce an animation of the particles being advected.
 #
 # First we create a figure using [`Observable`](https://makie.juliaplots.org/stable/documentation/nodes/)s.
 
@@ -98,7 +100,7 @@ ax = Axis(fig[1, 1],
           limits = ((-Lx/2, Lx/2), (-Ly/2, Ly/2)))
 
 hm = heatmap!(ax, x, y, c_anim;
-              colormap = :balance, colorrange = (-0.2, 0.2))
+              colormap = :balance)
 
 contour!(ax, x, y, ψ.(xgrid, ygrid);
          color = :grey, linestyle = :solid)
@@ -127,7 +129,6 @@ record(fig, "particle-advection.mp4", frames, framerate = 12) do j
 end
 
 # ![](particle-advection.mp4)
-
 
 ## References
 
