@@ -36,6 +36,12 @@ defined then by default are set to have the same value as ``\kappa``.
 
 The advecting flow can be either compressible or incompressible. 
 
+!!! tip "Advection equation"
+    If the diffusivity ``\kappa`` is set to zero, then the advection-diffusion equation reduces to the advection equation
+    ```math
+        \partial_{t}c + \bm{u} \cdot c = 0
+    ```
+    in 1D, 2D or 3D. This can be used to simulate the advection of particles by a flow field as in **make example**.
 
 ### Implementation
 
