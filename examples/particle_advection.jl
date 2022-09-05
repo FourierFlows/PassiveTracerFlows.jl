@@ -58,7 +58,7 @@ nothing # hide
 # ## Problem setup
 # We initialize a `Problem` by providing a set of keyword arguments. Again note that this will be an 
 # advection only problem as we have set the diffusivity, ``\kappa``, to zero
-prob = TracerAdvectionDiffusion.Problem(dev, advecting_flow; nx, Lx, κ, dt = Δt, stepper)
+prob = TracerAdvectionDiffusion.Problem(dev, advecting_flow; nx, Lx, κ, dt, stepper)
 
 # and define some shortcuts
 sol, clock, vars, params, grid = prob.sol, prob.clock, prob.vars, prob.params, prob.grid
