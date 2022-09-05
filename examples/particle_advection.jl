@@ -14,7 +14,7 @@
 #
 # ## Let's begin
 # First load packages needed to run this example.
-using PassiveTracerFlows, CairoMakie, Printf, JLD2, LinearAlgebra
+using PassiveTracerFlows, CairoMakie, Printf, JLD2, LinearAlgebra, Random
 
 # ## Choosing a device: CPU or GPU
 
@@ -57,7 +57,7 @@ nothing # hide
 
 # ## Problem setup
 # We initialize a `Problem` by providing a set of keyword arguments.
-prob = TracerAdvectionDiffusion.Problem(dev, advecting_flow; nx = nx, Lx = Lx, κ, dt = Δt, stepper)
+prob = TracerAdvectionDiffusion.Problem(dev, advecting_flow; nx, Lx, κ, dt = Δt, stepper)
 
 # and define some shortcuts
 sol, clock, vars, params, grid = prob.sol, prob.clock, prob.vars, prob.params, prob.grid
@@ -66,7 +66,68 @@ xgrid, ygrid = gridpoints(grid)
 nothing # hide
 
 # ## Setting initial conditions
-# We choose some random locations on the grid to place a particle that will be advected by the flow.
+# We choose some random locations on the grid to place particles that will be advected by the flow.
+
+pᵢ = rand(1:grid.nx, (5, 2))
+p₀ = zeros(grid.nx, grid.ny)
+for j ∈ 1:lastindex(pᵢ[:, 1])
+  p₀[pᵢ[j, 1], pᵢ[j, 2]] = 1.0
+end
+
+TracerAdvectionDiffusion.set_c!(prob, p₀)
+
+# ## Time-stepping the `Problem` forward
+
+# We want to step the `Problem` forward in time and, whilst doing so, we'd like
+# to produce an animation of the particles being advected
+#
+# First we create a figure using [`Observable`](https://makie.juliaplots.org/stable/documentation/nodes/)s.
+
+c_anim = Observable(Array(vars.c))
+title = Observable(@sprintf("particle position, t = %.2f", clock.t))
+
+Lx, Ly = grid.Lx, grid.Ly
+
+fig = Figure(resolution = (600, 600))
+
+ax = Axis(fig[1, 1], 
+          xlabel = "x",
+          ylabel = "y",
+          aspect = 1,
+          title = title,
+          limits = ((-Lx/2, Lx/2), (-Ly/2, Ly/2)))
+
+hm = heatmap!(ax, x, y, c_anim;
+              colormap = :balance, colorrange = (-0.2, 0.2))
+
+contour!(ax, x, y, ψ.(xgrid, ygrid);
+         color = :grey, linestyle = :solid)
+
+fig
+
+# Now we time-step `Problem` and update the `c_anim` and `title` observables as we go
+# to create an animation.
+
+startwalltime = time()
+
+frames = 0:round(Int, nsteps/nsubs)
+record(fig, "particle-advection.mp4", frames, framerate = 12) do j
+   if j % (200 / nsubs) == 0
+      log = @sprintf("step: %04d, t: %d, walltime: %.2f min", 
+                     clock.step, clock.t, (time()-startwalltime)/60)
+      
+      println(log)
+    end
+
+  c_anim[] = vars.c
+  title[] = @sprintf("particle position, t = %.2f", clock.t)
+
+  stepforward!(prob, nsubs)
+  TracerAdvectionDiffusion.updatevars!(prob)
+end
+
+# ![](particle-advection.mp4)
+
 
 ## References
 
