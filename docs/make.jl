@@ -42,7 +42,8 @@ format = Documenter.HTML(
 
 makedocs(
    modules = [PassiveTracerFlows],
-   doctest = false,
+   doctest = true,
+  warnonly = [:footnote, :cross_references],
      clean = true,
  checkdocs = :all,
     format = format,
@@ -67,9 +68,30 @@ makedocs(
            ]
 )
 
+@info "Clean up temporary .jld2 and .nc output created by doctests or literated examples..."
+
+"""
+    recursive_find(directory, pattern)
+
+Return list of filepaths within `directory` that contains the `pattern::Regex`.
+"""
+recursive_find(directory, pattern) =
+  mapreduce(vcat, walkdir(directory)) do (root, dirs, files)
+    joinpath.(root, filter(contains(pattern), files))
+  end
+
+files = []
+for pattern in [r"\.jld2", r"\.nc"]
+  global files = vcat(files, recursive_find(@__DIR__, pattern))
+end
+
+for file in files
+  rm(file)
+end
+
 withenv("GITHUB_REPOSITORY" => "FourierFlows/PassiveTracerFlowsDocumentation") do
   deploydocs(       repo = "github.com/FourierFlows/PassiveTracerFlowsDocumentation.git",
-                versions = ["stable" => "v^", "v#.#.#", "dev" => "dev"],
+                versions = ["stable" => "v^", "dev" => "dev", "v#.#.#"],
             push_preview = false,
                forcepush = true,
                devbranch = "main"
