@@ -16,10 +16,10 @@ steps:
     if: build.message !~ /\[skip tests\]/
     timeout_in_minutes: 60
 
-  - label: "🏄🏻‍♂️ Julia 1.8"
+  - label: "🏄🏻‍♂️ Julia 1.9"
     plugins:
       - JuliaCI/julia#v1:
-          version: 1.8
+          version: 1.9
       - JuliaCI/julia-test#v1: ~
     agents:
       queue: "juliagpu"
