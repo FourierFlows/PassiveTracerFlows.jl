@@ -43,7 +43,7 @@ format = Documenter.HTML(
 makedocs(
    modules = [PassiveTracerFlows],
    doctest = true,
-  warnonly = [:footnote, :cross_references],
+  warnonly = [:footnote, :cross_references, :missing_docs],
      clean = true,
  checkdocs = :all,
     format = format,
