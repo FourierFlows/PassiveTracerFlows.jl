@@ -305,20 +305,20 @@ function test_diffusion_multilayerqg(stepper, dt, tfinal, dev::Device=CPU())
   nx = 128
   Lx = 2π
 
-  μ = 0                 
-  β = 0                    
+  μ = 0
+  β = 0
 
-  nlayers = 2              
-  f₀, g = 1, 1             
+  nlayers = 2
+  f₀ = 1
   H = [0.2, 0.8]          
-  ρ = [4.0, 5.0]          
+  b = [-1.0, -1.2]
 
   U = zeros(nlayers) 
   U[1] = 0.0
   U[2] = 0.0
 
   MQGprob = MultiLayerQG.Problem(nlayers, dev;
-                                 nx, Lx, f₀, g, H, ρ, U, μ, β, dt,
+                                 nx, Lx, f₀, H, b, U, μ, β, dt,
                                  stepper="FilteredRK4", aliased_fraction=0)
   grid = MQGprob.grid
   q₀ = zeros(dev, eltype(grid), (grid.nx, grid.ny, nlayers))
