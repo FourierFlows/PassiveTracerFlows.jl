@@ -1,7 +1,7 @@
 # # Advection-diffusion of tracer in one dimension
 #
-# This is an example demonstrating the advection-diffusion of a passive tracer in 
-# one dimension. 
+# This is an example demonstrating the advection-diffusion of a passive tracer in
+# one dimension.
 #
 # ## Install dependencies
 #
@@ -70,7 +70,7 @@ function get_concentration(prob)
 
   return prob.vars.c
 end
-  
+
 output = Output(prob, "advection-diffusion1D.jld2",
                 (:concentration, get_concentration))
 
@@ -112,7 +112,7 @@ n = Observable(1)
 c_anim = @lift Array(c[$n])
 title = @lift @sprintf("concentration, t = %s", t[$n])
 
-fig = Figure(resolution = (600, 600))
+fig = Figure(size = (600, 600))
 ax = Axis(fig[1, 1],
           xlabel = "x",
           ylabel = "c",
