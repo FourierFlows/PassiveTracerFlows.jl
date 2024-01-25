@@ -1,7 +1,7 @@
 # # Advection-diffusion of tracer by cellular flow
 #
 #md # This example can be viewed as a Jupyter notebook via [![](https://img.shields.io/badge/show-nbviewer-579ACA.svg)](@__NBVIEWER_ROOT_URL__/literated/cellularflow.ipynb).
-# 
+#
 # An example demonstrating the advection-diffusion of a tracer by a cellular flow.
 #
 # ## Install dependencies
@@ -95,9 +95,9 @@ title = Observable(@sprintf("concentration, t = %.2f", clock.t))
 
 Lx, Ly = grid.Lx, grid.Ly
 
-fig = Figure(resolution = (600, 600))
+fig = Figure(size = (600, 600))
 
-ax = Axis(fig[1, 1], 
+ax = Axis(fig[1, 1],
           xlabel = "x",
           ylabel = "y",
           aspect = 1,
@@ -122,9 +122,9 @@ startwalltime = time()
 frames = 0:round(Int, nsteps/nsubs)
 record(fig, "cellularflow_advection-diffusion.mp4", frames, framerate = 12) do j
    if j % (200 / nsubs) == 0
-      log = @sprintf("step: %04d, t: %d, walltime: %.2f min", 
+      log = @sprintf("step: %04d, t: %d, walltime: %.2f min",
                      clock.step, clock.t, (time()-startwalltime)/60)
-      
+
       println(log)
     end
 
